@@ -596,7 +596,7 @@
         }
 
         // Google Apps Script URL
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbx8Uj24F95qDEDteRVto165IHo6aDaMJZMw4EwHcUtSaU6r_ibvZVai2Xe_A7McIRS5Dw/exec';
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbz_8srwh9LbXYi0DwhhNH0EV8IAwGQkh5OLDwfNT2kic5etpuCNoKnGhNLz5TotpgqtJA/exec';
 
         function submitToGoogleSheets() {
             // Collect all data
@@ -647,15 +647,31 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                mode: 'no-cors',
+                redirect: 'follow',
                 body: JSON.stringify(data)
             })
             .then(response => {
                 console.log('Response status:', response.status);
-                return response.json();
+                console.log('Response headers:', response.headers);
+                
+                // Check if response is ok
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // Try to parse JSON, but handle non-JSON responses
+                return response.text().then(text => {
+                    console.log('Raw response:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.log('Response is not JSON:', text);
+                        return { success: false, error: 'Invalid JSON response: ' + text };
+                    }
+                });
             })
             .then(result => {
-                console.log('Response:', result);
+                console.log('Parsed response:', result);
                 if (result.success) {
                     alert('✅ Successfully Submitted to Google Sheets!');
                 } else {
@@ -663,7 +679,7 @@
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Fetch error:', error);
                 alert('❌ Submission Failed: ' + error.message);
             });
         }
