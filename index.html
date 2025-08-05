@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Startup Diagnostic System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f4f6fa; margin: 0; }
+        .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.08); padding: 32px 24px; }
+        .progress-bar { width: 100%; background: #eee; border-radius: 5px; height: 10px; margin-bottom: 24px; }
+        .progress { height: 10px; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 5px; transition: width 0.3s; }
+        .step { display: none; }
+        .step.active { display: block; }
+        .form-group { margin-bottom: 24px; }
+        label { font-weight: 500; display: block; margin-bottom: 8px; }
+        input, select, textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem; }
+        .button-row { display: flex; justify-content: space-between; margin-top: 24px; }
+        button { padding: 10px 24px; border: none; border-radius: 5px; background: #667eea; color: #fff; font-size: 1rem; cursor: pointer; }
+        button[disabled] { background: #ccc; cursor: not-allowed; }
+        .results { background: #f8f9fa; border-radius: 8px; padding: 24px; margin-top: 32px; }
+        .results h2 { color: #667eea; }
+        .hidden { display: none; }
+        .success-message { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .error-message { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Startup Diagnostic - Initial Assessment</h1>
+        <div class="progress-bar"><div class="progress" id="progress" style="width: 0%"></div></div>
+        <form id="startupForm">
+            <!-- Steps will be injected here by JS -->
+        </form>
+        <div class="results hidden" id="results"></div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let totalSteps = 26;
+        let answers = {};
+        let stageResult = {};
+        let stageSpecificAnswers = {};
+        let currentStageStep = 1;
+        let totalStageSteps = 0;
+
+        // All 26 questions in ORIGINAL ORDER
+        const questions = [
+            { id: 1, label: "Founder Name", name: "founderName", type: "text", placeholder: "Your name" },
+            { id: 2, label: "Email", name: "email", type: "email", placeholder: "your@email.com" },
+            { id: 3, label: "Company Name", name: "companyName", type: "text", placeholder: "Your company name" },
+            { id: 4, label: "Company Website", name: "companyWebsite", type: "url", placeholder: "https://yourcompany.com" },
+            { id: 5, label: "In a few sentences, describe the opportunity and how your solution is best placed to address it?", name: "opportunitySolution", type: "textarea", placeholder: "Describe your opportunity and solution..." },
+            { id: 6, label: "Why is now the right time to build the solution?", name: "whyNow", type: "textarea", placeholder: "Explain why now is the right time..." },
+            { id: 7, label: "How clearly have you defined your target market and competitive edge at this stage?", name: "marketSizing", type: "select", options: [
+                "We're still exploring — haven't clearly defined our target market or competitors yet.",
+                "We have a rough idea of our target market and early signs of competitor activity.",
+                "We've completed TAM/SAM/SOM sizing and identified key competitors.",
+                "We have TAM/SAM/SOM + clear articulation of how we differ from existing solutions.",
+                "We deeply understand market dynamics, supported by robust TAM/SAM/SOM + competitor analysis."
+            ]},
+            { id: 8, label: "Who is your target customer/user? Why are they a good fit for your solution?", name: "targetCustomer", type: "textarea", placeholder: "Describe your target customer..." },
+            { id: 9, label: "How many paying customers or active users do you currently have?", name: "customers", type: "number", placeholder: "0" },
+            { id: 10, label: "Roughly what % of your current customers or users are actively engaging with the product at least monthly?", name: "engagementQuality", type: "select", options: [
+                "Not applicable", "Less than 10%", "10–30%", "30–60%", "Over 60%"
+            ]},
+            { id: 11, label: "How are you currently acquiring your customers?", name: "goToMarket", type: "select", options: [
+                "Haven't started acquiring yet", "Founder-led outreach or referrals", "Word of mouth / organic demand",
+                "Paid marketing or ads", "Partnerships / channel sales", "Dedicated sales team or GTM function"
+            ]},
+            { id: 12, label: "What best describes your primary business model?", name: "businessModel", type: "select", options: [
+                "B2B (selling to businesses)", "B2C (selling to consumers)", "B2G (selling to government)",
+                "Marketplace (buyers & sellers)", "Direct-to-Consumer (D2C)", "Subscription (e.g., SaaS)",
+                "Consumer App", "Other / Not Listed"
+            ]},
+            { id: 13, label: "Which region is your company primarily operating in?", name: "region", type: "select", options: [
+                "North America (US, Canada)", "Western Europe (e.g. UK, Germany, France, Nordics etc.)",
+                "Australia & New Zealand", "Central & Eastern Europe", "Latin America", "Sub-Saharan Africa",
+                "Middle East & North Africa (MENA)", "South Asia (e.g. India, Pakistan)",
+                "Southeast Asia (e.g. Indonesia, Vietnam, Philippines)", "East Asia (e.g. China, Japan, Korea, Singapore)", "Other"
+            ]},
+            { id: 14, label: "Which category best describes your business type?", name: "businessType", type: "select", options: [
+                "SaaS (Software as a Service)", "Marketplace (connecting buyers/sellers)", "E-commerce / DTC",
+                "Hardware / Devices", "Services (e.g. consulting, agency)", "Platform / API-based",
+                "Community or Content-led", "Other"
+            ]},
+            { id: 15, label: "What industry are you in?", name: "industry", type: "select", options: [
+                "Software / SaaS", "Fintech / Insurtech", "Health / MedTech", "E-commerce / DTC",
+                "Deep Tech / AI / Robotics", "Education / EdTech", "Social Impact / Nonprofit", "Other"
+            ]},
+            { id: 16, label: "What best describes the current state of your product?", name: "productReadiness", type: "select", options: [
+                "Idea or concept only", "Wireframes / mockups", "MVP built (not in use)",
+                "MVP being tested with early users", "Live product with active users",
+                "Fully launched and scaled", "Not applicable / unknown"
+            ]},
+            { id: 17, label: "What is your total revenue in the past 12 months (USD)?", name: "revenue", type: "number", placeholder: "0" },
+            { id: 18, label: "How many months of runway do you currently have based on your cash on hand and current burn?", name: "runway", type: "number", placeholder: "0", step: "0.5" },
+            { id: 19, label: "How much funding have you raised to date (USD)?", name: "funding", type: "number", placeholder: "0" },
+            { id: 20, label: "Which of the following additional signals of traction or customer validation has your business achieved? (Select all that apply)", name: "tractionSignals", type: "checkbox", options: [
+                "Pilot or beta program completed with users", "Active user or customer engagement",
+                "Signed commercial or strategic agreements (LOIs, MOUs, etc.)", "Channel partner actively generating leads",
+                "10+ customer discovery interviews or UX tests", "Validation that changed product or GTM direction",
+                "Qualified waitlist with warm intent", "Inbound partner or ecosystem interest",
+                "Press, analyst, or ecosystem recognition", "Funnel metrics actively tracked", "None of the above"
+            ]},
+            { id: 21, label: "Outline the backgrounds of the founders in your business. Why are you best placed to make this solution work?", name: "founderProfiles", type: "textarea", placeholder: "Describe founder backgrounds and fit..." },
+            { id: 22, label: "Including founders, how many people are currently on your team (full-time equivalents)?", name: "teamSize", type: "number", placeholder: "1", min: "1" },
+            { id: 23, label: "What's the story behind how you started working on this business?", name: "teamStory", type: "textarea", placeholder: "Tell the story of how you started..." },
+            { id: 24, label: "How are you currently identifying and addressing key risks or assumptions in the business?", name: "risksAssumptions", type: "select", options: [
+                "We've started thinking through key risks and assumptions but haven't formalised anything yet.",
+                "We've identified a few major assumptions (e.g. demand, pricing, team), and are working out how to test them.",
+                "We're actively testing high-risk assumptions through user feedback, pilots, or experiments.",
+                "We've validated core assumptions and now track remaining risks with basic systems or tools.",
+                "We've built a systematic approach to monitoring and mitigating risks across functions (e.g. ops, product, compliance)."
+            ]},
+            { id: 25, label: "What goals are you looking to achieve over the coming 6 months with your business?", name: "goals", type: "checkbox", options: [
+                "Launch a product or MVP with early users", "Test and validate solution with real users",
+                "Acquire early customers or drive growth", "Raise investment", "Make key hires or build out the team",
+                "Improve financial planning or extend runway", "Understand my ideal customer or positioning", "Other (please specify)"
+            ]},
+            { id: 26, label: "Anything else you think we should know about your business at this time?", name: "otherInformation", type: "textarea", placeholder: "Any additional information..." }
+        ];
+
+        // Stage-specific questions
+        const stageQuestions = {
+            "Ideation": [
+                { label: "How well do you understand your customer profile and their pain points?", name: "ideation_customer_profile", type: "select", options: ["Not defined", "Basic understanding", "Clear understanding", "Deep understanding", "Validated with customers"] },
+                { label: "What is the scope of your MVP and how will you test it?", name: "ideation_mvp_scope", type: "select", options: ["No MVP planned", "Basic MVP concept", "MVP features defined", "MVP in development", "MVP ready for testing"] },
+                { label: "How clear is your business model and revenue strategy?", name: "ideation_business_model", type: "select", options: ["Not defined", "Basic concept", "Clear model", "Validated model", "Proven model"] },
+                { label: "What is your go-to-market thinking and strategy?", name: "ideation_gtm_thinking", type: "select", options: ["No GTM plan", "Basic GTM concept", "GTM strategy defined", "GTM channels identified", "GTM plan ready"] },
+                { label: "How strong is your technical team capability?", name: "ideation_team_technical", type: "select", options: ["No technical team", "Basic technical skills", "Good technical skills", "Strong technical team", "Expert technical team"] },
+                { label: "How strong is your commercial team capability?", name: "ideation_team_commercial", type: "select", options: ["No commercial team", "Basic commercial skills", "Good commercial skills", "Strong commercial team", "Expert commercial team"] },
+                { label: "How ready are you for fundraising?", name: "ideation_fundraising_readiness", type: "select", options: ["Not ready", "Basic preparation", "Good preparation", "Ready to fundraise", "Fundraising in progress"] },
+                { label: "What progress have you made on key milestones?", name: "ideation_milestones_progress", type: "select", options: ["No milestones set", "Milestones defined", "Some progress made", "Good progress", "Milestones achieved"] }
+            ],
+            "Validation": [
+                { label: "How well have you validated your solution's value proposition?", name: "validation_solution_value", type: "select", options: ["Not validated", "Basic validation", "Good validation", "Strong validation", "Fully validated"] },
+                { label: "How well do you understand your ICP's behavior and needs?", name: "validation_icp_behavior", type: "select", options: ["Not understood", "Basic understanding", "Good understanding", "Deep understanding", "Expert understanding"] },
+                { label: "What traction have you achieved in your target segment?", name: "validation_segment_traction", type: "select", options: ["No traction", "Early signs", "Some traction", "Good traction", "Strong traction"] },
+                { label: "How well have you tested your MVP with users?", name: "validation_mvp_testing", type: "select", options: ["Not tested", "Basic testing", "Good testing", "Comprehensive testing", "Extensive testing"] },
+                { label: "How much experimentation have you done with go-to-market?", name: "validation_gtm_experimentation", type: "select", options: ["No experimentation", "Basic experiments", "Good experiments", "Comprehensive experiments", "Extensive experiments"] },
+                { label: "What traction signals have you achieved?", name: "validation_traction_signals", type: "select", options: ["No signals", "Early signals", "Some signals", "Good signals", "Strong signals"] },
+                { label: "What resource gaps do you need to address?", name: "validation_resource_gaps", type: "select", options: ["Major gaps", "Significant gaps", "Some gaps", "Minor gaps", "No gaps"] },
+                { label: "How well have you planned your financial runway?", name: "validation_financial_planning", type: "select", options: ["No planning", "Basic planning", "Good planning", "Strong planning", "Excellent planning"] },
+                { label: "How prepared are you for fundraising?", name: "validation_fundraising_preparation", type: "select", options: ["Not prepared", "Basic preparation", "Good preparation", "Strong preparation", "Excellent preparation"] },
+                { label: "How well have you reviewed and addressed key risks and assumptions?", name: "validation_risk_assumption_review", type: "select", options: ["No review", "Basic review", "Good review", "Comprehensive review", "Thorough review"] }
+            ],
+            "Early Traction": [
+                { label: "How strong is your customer retention and engagement?", name: "early_traction_customer_retention", type: "select", options: ["Poor retention", "Basic retention", "Good retention", "Strong retention", "Excellent retention"] },
+                { label: "What market signals are you seeing?", name: "early_traction_market_signals", type: "select", options: ["No signals", "Early signals", "Some signals", "Good signals", "Strong signals"] },
+                { label: "How well is your product being used by customers?", name: "early_traction_product_usage", type: "select", options: ["Low usage", "Basic usage", "Good usage", "High usage", "Excellent usage"] },
+                { label: "How well are you executing your go-to-market strategy?", name: "early_traction_gtm_execution", type: "select", options: ["Poor execution", "Basic execution", "Good execution", "Strong execution", "Excellent execution"] },
+                { label: "How scalable are your operations?", name: "early_traction_ops_scalability", type: "select", options: ["Not scalable", "Basic scalability", "Good scalability", "Strong scalability", "Excellent scalability"] },
+                { label: "How well are you managing legal and compliance?", name: "early_traction_legal_compliance", type: "select", options: ["Poor compliance", "Basic compliance", "Good compliance", "Strong compliance", "Excellent compliance"] },
+                { label: "How well are you activating and monetizing users?", name: "early_traction_activation_monetization", type: "select", options: ["Poor activation", "Basic activation", "Good activation", "Strong activation", "Excellent activation"] },
+                { label: "What capability gaps do you need to address?", name: "early_traction_capability_gaps", type: "select", options: ["Major gaps", "Significant gaps", "Some gaps", "Minor gaps", "No gaps"] },
+                { label: "How well are you building your people and culture?", name: "early_traction_people_culture", type: "select", options: ["Poor culture", "Basic culture", "Good culture", "Strong culture", "Excellent culture"] },
+                { label: "How well have you planned your financial runway?", name: "early_traction_financial_planning", type: "select", options: ["Poor planning", "Basic planning", "Good planning", "Strong planning", "Excellent planning"] },
+                { label: "How strong is your investment narrative?", name: "early_traction_investment_narrative", type: "select", options: ["Weak narrative", "Basic narrative", "Good narrative", "Strong narrative", "Excellent narrative"] },
+                { label: "How well are you planning strategically?", name: "early_traction_strategic_planning", type: "select", options: ["Poor planning", "Basic planning", "Good planning", "Strong planning", "Excellent planning"] },
+                { label: "How ready are you to scale?", name: "early_traction_scale_readiness", type: "select", options: ["Not ready", "Basic readiness", "Good readiness", "Strong readiness", "Excellent readiness"] }
+            ],
+            "Growth": [
+                { label: "How strong is your customer retention and expansion?", name: "growth_customer_retention", type: "select", options: ["Poor retention", "Basic retention", "Good retention", "Strong retention", "Excellent retention"] },
+                { label: "How well do you differentiate from competitors?", name: "growth_competitive_differentiation", type: "select", options: ["Poor differentiation", "Basic differentiation", "Good differentiation", "Strong differentiation", "Excellent differentiation"] },
+                { label: "How deep is your product offering?", name: "growth_product_depth", type: "select", options: ["Shallow product", "Basic depth", "Good depth", "Strong depth", "Excellent depth"] },
+                { label: "How well is your go-to-market engine performing?", name: "growth_gtm_engine", type: "select", options: ["Poor performance", "Basic performance", "Good performance", "Strong performance", "Excellent performance"] },
+                { label: "How well are your systems and tooling set up?", name: "growth_systems_tooling", type: "select", options: ["Poor systems", "Basic systems", "Good systems", "Strong systems", "Excellent systems"] },
+                { label: "How well are you managing regulatory compliance?", name: "growth_regulatory_compliance", type: "select", options: ["Poor compliance", "Basic compliance", "Good compliance", "Strong compliance", "Excellent compliance"] },
+                { label: "How sustainable are your key metrics?", name: "growth_sustainable_metrics", type: "select", options: ["Poor sustainability", "Basic sustainability", "Good sustainability", "Strong sustainability", "Excellent sustainability"] },
+                { label: "How well is your organizational structure set up?", name: "growth_org_structure", type: "select", options: ["Poor structure", "Basic structure", "Good structure", "Strong structure", "Excellent structure"] },
+                { label: "How well are you managing financial discipline?", name: "growth_financial_discipline", type: "select", options: ["Poor discipline", "Basic discipline", "Good discipline", "Strong discipline", "Excellent discipline"] },
+                { label: "How ready are you for institutional fundraising?", name: "growth_institutional_fundraising", type: "select", options: ["Not ready", "Basic readiness", "Good readiness", "Strong readiness", "Excellent readiness"] },
+                { label: "How well are you maintaining strategic focus?", name: "growth_strategic_focus", type: "select", options: ["Poor focus", "Basic focus", "Good focus", "Strong focus", "Excellent focus"] },
+                { label: "How well developed is your expansion playbook?", name: "growth_expansion_playbook", type: "select", options: ["No playbook", "Basic playbook", "Good playbook", "Strong playbook", "Excellent playbook"] }
+            ],
+            "Scale": [
+                { label: "How well developed is your enterprise portfolio?", name: "scale_enterprise_portfolio", type: "select", options: ["No enterprise", "Basic enterprise", "Good enterprise", "Strong enterprise", "Excellent enterprise"] },
+                { label: "How well defined is your segment strategy?", name: "scale_segment_strategy", type: "select", options: ["No strategy", "Basic strategy", "Good strategy", "Strong strategy", "Excellent strategy"] },
+                { label: "How strong is your market intelligence?", name: "scale_market_intelligence", type: "select", options: ["Poor intelligence", "Basic intelligence", "Good intelligence", "Strong intelligence", "Excellent intelligence"] },
+                { label: "How well developed is your platform ecosystem?", name: "scale_platform_ecosystem", type: "select", options: ["No ecosystem", "Basic ecosystem", "Good ecosystem", "Strong ecosystem", "Excellent ecosystem"] },
+                { label: "How well are you executing international go-to-market?", name: "scale_international_gtm", type: "select", options: ["No international", "Basic international", "Good international", "Strong international", "Excellent international"] },
+                { label: "How well are your enterprise systems set up?", name: "scale_enterprise_systems", type: "select", options: ["Poor systems", "Basic systems", "Good systems", "Strong systems", "Excellent systems"] },
+                { label: "How well is your central data platform developed?", name: "scale_central_data_platform", type: "select", options: ["No platform", "Basic platform", "Good platform", "Strong platform", "Excellent platform"] },
+                { label: "How well are you leveraging business partnerships?", name: "scale_business_leverage", type: "select", options: ["Poor leverage", "Basic leverage", "Good leverage", "Strong leverage", "Excellent leverage"] },
+                { label: "How well is your organizational design optimized?", name: "scale_org_design", type: "select", options: ["Poor design", "Basic design", "Good design", "Strong design", "Excellent design"] },
+                { label: "How well are you managing capital allocation?", name: "scale_capital_allocation", type: "select", options: ["Poor allocation", "Basic allocation", "Good allocation", "Strong allocation", "Excellent allocation"] },
+                { label: "How well are you maintaining strategic optionality?", name: "scale_strategic_optionality", type: "select", options: ["Poor optionality", "Basic optionality", "Good optionality", "Strong optionality", "Excellent optionality"] },
+                { label: "How well are you executing inorganic growth?", name: "scale_inorganic_growth", type: "select", options: ["No inorganic", "Basic inorganic", "Good inorganic", "Strong inorganic", "Excellent inorganic"] }
+            ]
+        };
+
+        // Initialize form
+        function initializeForm() {
+            const form = document.getElementById('startupForm');
+            form.innerHTML = '';
+            
+            questions.forEach((question, index) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = `step ${index === 0 ? 'active' : ''}`;
+                stepDiv.id = `step${index + 1}`;
+                
+                stepDiv.innerHTML = `
+                    <h2>Question ${index + 1} of ${questions.length}</h2>
+                    <div class="form-group">
+                        <label for="${question.name}">${question.label}</label>
+                        ${generateInput(question)}
+                    </div>
+                    <div class="button-row">
+                        ${index > 0 ? '<button type="button" onclick="prevStep()">Back</button>' : '<div></div>'}
+                        ${index < questions.length - 1 ? '<button type="button" onclick="nextStep()">Continue</button>' : '<button type="button" onclick="calculateStage()">Get Results</button>'}
+                    </div>
+                `;
+                
+                form.appendChild(stepDiv);
+            });
+            
+            updateProgress();
+        }
+
+        function generateInput(question) {
+            switch(question.type) {
+                case 'text':
+                case 'email':
+                case 'url':
+                    return `<input type="${question.type}" id="${question.name}" name="${question.name}" placeholder="${question.placeholder || ''}">`;
+                case 'number':
+                    return `<input type="number" id="${question.name}" name="${question.name}" placeholder="${question.placeholder || ''}" ${question.min ? `min="${question.min}"` : ''} ${question.step ? `step="${question.step}"` : ''}>`;
+                case 'textarea':
+                    return `<textarea id="${question.name}" name="${question.name}" placeholder="${question.placeholder || ''}" rows="4"></textarea>`;
+                case 'select':
+                    let options = '<option value="">Please select...</option>';
+                    question.options.forEach(option => {
+                        options += `<option value="${option}">${option}</option>`;
+                    });
+                    return `<select id="${question.name}" name="${question.name}">${options}</select>`;
+                case 'checkbox':
+                    let checkboxes = '';
+                    question.options.forEach(option => {
+                        checkboxes += `<label><input type="checkbox" name="${question.name}" value="${option}"> ${option}</label><br>`;
+                    });
+                    return `<div>${checkboxes}</div>`;
+                default:
+                    return `<input type="text" id="${question.name}" name="${question.name}">`;
+            }
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+        }
+
+        function showStep(stepNumber) {
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+            document.getElementById(`step${stepNumber}`).classList.add('active');
+            updateProgress();
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        function collectAnswers() {
+            answers = {};
+            questions.forEach(question => {
+                if (question.type === 'checkbox') {
+                    const checkboxes = document.querySelectorAll(`input[name="${question.name}"]:checked`);
+                    answers[question.name] = Array.from(checkboxes).map(cb => cb.value);
+                } else {
+                    const element = document.getElementById(question.name);
+                    if (element) {
+                        answers[question.name] = element.value;
+                    }
+                }
+            });
+        }
+
+        function calculateStage() {
+            collectAnswers();
+            
+            // Profile classification
+            const businessModelMapping = {
+                'B2B (selling to businesses)': 'B2B',
+                'B2C (selling to consumers)': 'B2C',
+                'B2G (selling to government)': 'B2B',
+                'Marketplace (buyers & sellers)': 'B2B',
+                'Direct-to-Consumer (D2C)': 'B2C',
+                'Subscription (e.g., SaaS)': 'B2B',
+                'Consumer App': 'B2C',
+                'Other / Not Listed': 'B2B'
+            };
+
+            const regionMapping = {
+                'North America (US, Canada)': 'Tier1',
+                'Western Europe (e.g. UK, Germany, France, Nordics etc.)': 'Tier1',
+                'Australia & New Zealand': 'Tier1',
+                'East Asia (e.g. China, Japan, Korea, Singapore)': 'Tier1',
+                'Central & Eastern Europe': 'Tier2/3',
+                'Latin America': 'Tier2/3',
+                'Sub-Saharan Africa': 'Tier2/3',
+                'Middle East & North Africa (MENA)': 'Tier2/3',
+                'South Asia (e.g. India, Pakistan)': 'Tier2/3',
+                'Southeast Asia (e.g. Indonesia, Vietnam, Philippines)': 'Tier2/3',
+                'Other': 'Tier2/3'
+            };
+
+            const businessTypeMapping = {
+                'SaaS (Software as a Service)': 'SaaS',
+                'Marketplace (connecting buyers/sellers)': 'Marketplace',
+                'E-commerce / DTC': 'Other',
+                'Hardware / Devices': 'Other',
+                'Services (e.g. consulting, agency)': 'Other',
+                'Platform / API-based': 'SaaS',
+                'Community or Content-led': 'Other',
+                'Other': 'Other'
+            };
+
+            const industryMapping = {
+                'Software / SaaS': 'Lean',
+                'Fintech / Insurtech': 'CapitalIntensive',
+                'Health / MedTech': 'CapitalIntensive',
+                'E-commerce / DTC': 'Lean',
+                'Deep Tech / AI / Robotics': 'CapitalIntensive',
+                'Education / EdTech': 'Lean',
+                'Social Impact / Nonprofit': 'Lean',
+                'Other': 'Lean'
+            };
+
+            const businessModel = businessModelMapping[answers.businessModel] || 'B2B';
+            const region = regionMapping[answers.region] || 'Tier1';
+            const businessType = businessTypeMapping[answers.businessType] || 'SaaS';
+            const industry = industryMapping[answers.industry] || 'Lean';
+            
+            const profile = `${businessModel}_${region}_${businessType}_${industry}`;
+
+            // Simplified scoring for demo
+            let totalScore = 0;
+            let scoreCount = 0;
+
+            // Score quantitative metrics
+            const revenue = parseFloat(answers.revenue) || 0;
+            const customers = parseFloat(answers.customers) || 0;
+            const funding = parseFloat(answers.funding) || 0;
+            const teamSize = parseFloat(answers.teamSize) || 1;
+            const runway = parseFloat(answers.runway) || 0;
+
+            if (revenue > 100000) totalScore += 9;
+            else if (revenue > 50000) totalScore += 5;
+            else totalScore += 2;
+            scoreCount++;
+
+            if (customers > 100) totalScore += 9;
+            else if (customers > 50) totalScore += 5;
+            else totalScore += 2;
+            scoreCount++;
+
+            if (funding > 1000000) totalScore += 9;
+            else if (funding > 500000) totalScore += 5;
+            else totalScore += 2;
+            scoreCount++;
+
+            if (teamSize > 10) totalScore += 9;
+            else if (teamSize > 5) totalScore += 5;
+            else totalScore += 2;
+            scoreCount++;
+
+            if (runway > 12) totalScore += 9;
+            else if (runway > 6) totalScore += 5;
+            else totalScore += 2;
+            scoreCount++;
+
+            const averageScore = totalScore / scoreCount;
+
+            // Stage mapping
+            let stage = 'Ideation';
+            if (averageScore >= 7.5) stage = 'Scale';
+            else if (averageScore >= 6.5) stage = 'Growth';
+            else if (averageScore >= 5.5) stage = 'Early Traction';
+            else if (averageScore >= 4.5) stage = 'Validation';
+            else stage = 'Ideation';
+
+            // Apply caveats
+            if (answers.productReadiness === 'Idea or concept only') {
+                stage = 'Ideation';
+            }
+
+            if ((!answers.customers || parseFloat(answers.customers) === 0) && (!answers.revenue || parseFloat(answers.revenue) === 0)) {
+                stage = 'Ideation';
+            }
+
+            stageResult = {
+                stage: stage,
+                score: averageScore.toFixed(2),
+                profile: profile,
+                totalScore: totalScore,
+                scoreCount: scoreCount
+            };
+
+            // Auto-redirect to stage-specific questions
+            startStageQuestions();
+        }
+
+        function startStageQuestions() {
+            // Hide initial form and results
+            document.getElementById('startupForm').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+            
+            // Update title
+            document.querySelector('h1').textContent = 'Startup Diagnostic - Stage-Specific Questions';
+            
+            // Map transition stages to base stages
+            const stageMapping = {
+                'Ideation': 'Ideation',
+                'Ideation → Validation': 'Ideation',
+                'Validation': 'Validation',
+                'Validation → Early Traction': 'Validation',
+                'Early Traction': 'Early Traction',
+                'Early Traction → Growth': 'Early Traction',
+                'Growth': 'Growth',
+                'Growth → Scale': 'Growth',
+                'Scale': 'Scale'
+            };
+            
+            const currentStage = stageMapping[stageResult.stage] || 'Ideation';
+            const stageQuestionsList = stageQuestions[currentStage];
+            
+            if (stageQuestionsList) {
+                totalStageSteps = stageQuestionsList.length;
+                currentStageStep = 1;
+                renderStageStep();
+            }
+        }
+
+        function renderStageStep() {
+            const stageMapping = {
+                'Ideation': 'Ideation',
+                'Ideation → Validation': 'Ideation',
+                'Validation': 'Validation',
+                'Validation → Early Traction': 'Validation',
+                'Early Traction': 'Early Traction',
+                'Early Traction → Growth': 'Early Traction',
+                'Growth': 'Growth',
+                'Growth → Scale': 'Growth',
+                'Scale': 'Scale'
+            };
+            
+            const currentStage = stageMapping[stageResult.stage] || 'Ideation';
+            const stageQuestionsList = stageQuestions[currentStage];
+            
+            if (!stageQuestionsList) return;
+            
+            const question = stageQuestionsList[currentStageStep - 1];
+            if (!question) return;
+            
+            const form = document.getElementById('startupForm');
+            form.style.display = 'block';
+            form.innerHTML = `
+                <h2>Stage-Specific Question ${currentStageStep} of ${totalStageSteps}</h2>
+                <div class="form-group">
+                    <label for="${question.name}">${question.label}</label>
+                    ${generateInput(question)}
+                </div>
+                <div class="button-row">
+                    ${currentStageStep > 1 ? '<button type="button" onclick="prevStageStep()">Back</button>' : '<div></div>'}
+                    ${currentStageStep < totalStageSteps ? '<button type="button" onclick="nextStageStep()">Continue</button>' : '<button type="button" onclick="finishStageQuestions()">Finish</button>'}
+                </div>
+            `;
+            
+            // Update progress
+            const progress = (currentStageStep / totalStageSteps) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+            document.getElementById('progress').parentElement.previousElementSibling.textContent = `Stage Question ${currentStageStep} of ${totalStageSteps}`;
+        }
+
+        function nextStageStep() {
+            saveStageAnswer();
+            if (currentStageStep < totalStageSteps) {
+                currentStageStep++;
+                renderStageStep();
+            }
+        }
+
+        function prevStageStep() {
+            saveStageAnswer();
+            if (currentStageStep > 1) {
+                currentStageStep--;
+                renderStageStep();
+            }
+        }
+
+        function saveStageAnswer() {
+            const stageMapping = {
+                'Ideation': 'Ideation',
+                'Ideation → Validation': 'Ideation',
+                'Validation': 'Validation',
+                'Validation → Early Traction': 'Validation',
+                'Early Traction': 'Early Traction',
+                'Early Traction → Growth': 'Early Traction',
+                'Growth': 'Growth',
+                'Growth → Scale': 'Growth',
+                'Scale': 'Scale'
+            };
+            
+            const currentStage = stageMapping[stageResult.stage] || 'Ideation';
+            const stageQuestionsList = stageQuestions[currentStage];
+            
+            if (!stageQuestionsList) return;
+            
+            const question = stageQuestionsList[currentStageStep - 1];
+            if (!question) return;
+            
+            const element = document.getElementById(question.name);
+            if (element) {
+                stageSpecificAnswers[question.name] = element.value;
+            }
+        }
+
+        function finishStageQuestions() {
+            saveStageAnswer();
+            showStageResults();
+        }
+
+        function showStageResults() {
+            const form = document.getElementById('startupForm');
+            form.style.display = 'none';
+            
+            const results = document.getElementById('results');
+            results.style.display = 'block';
+            results.innerHTML = `
+                <h2>📊 Your Complete Startup Diagnostic Results</h2>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h3>Stage Assessment: ${stageResult.stage}</h3>
+                    <p><strong>Overall Score:</strong> ${stageResult.score}/10</p>
+                    <p><strong>Profile:</strong> ${stageResult.profile}</p>
+                    <p><strong>Total Score:</strong> ${stageResult.totalScore} (${stageResult.scoreCount} metrics)</p>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button onclick="restartForm()" style="margin-right: 10px;">Start Over</button>
+                    <button onclick="exportCompleteData()" style="margin-right: 10px;">Export Data</button>
+                    <button onclick="submitToGoogleSheets()" style="background: #4285f4;">Submit to Google Sheets</button>
+                </div>
+            `;
+        }
+
+        function restartForm() {
+            currentStep = 1;
+            answers = {};
+            stageResult = {};
+            stageSpecificAnswers = {};
+            currentStageStep = 1;
+            totalStageSteps = 0;
+            
+            document.getElementById('startupForm').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.querySelector('h1').textContent = 'Startup Diagnostic - Initial Assessment';
+            
+            // Reset form
+            document.querySelectorAll('input, select, textarea').forEach(element => {
+                if (element.type === 'checkbox' || element.type === 'radio') {
+                    element.checked = false;
+                } else {
+                    element.value = '';
+                }
+            });
+            
+            initializeForm();
+        }
+
+        function exportCompleteData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                initialAnswers: answers,
+                stageResult: stageResult,
+                stageSpecificAnswers: stageSpecificAnswers
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'startup-diagnostic-results.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Google Apps Script URL
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbx8Uj24F95qDEDteRVto165IHo6aDaMJZMw4EwHcUtSaU6r_ibvZVai2Xe_A7McIRS5Dw/exec';
+
+        function submitToGoogleSheets() {
+            // Collect all data
+            const data = {
+                submissionDate: new Date().toLocaleDateString(),
+                timestamp: new Date().toISOString(),
+                founderName: answers.founderName || '',
+                email: answers.email || '',
+                companyName: answers.companyName || '',
+                companyWebsite: answers.companyWebsite || '',
+                calculatedStage: stageResult.stage,
+                overallScore: stageResult.score,
+                profile: stageResult.profile,
+                opportunitySolution: answers.opportunitySolution || '',
+                whyNow: answers.whyNow || '',
+                marketSizing: answers.marketSizing || '',
+                targetCustomer: answers.targetCustomer || '',
+                customers: answers.customers || '',
+                engagementQuality: answers.engagementQuality || '',
+                goToMarket: answers.goToMarket || '',
+                businessModel: answers.businessModel || '',
+                region: answers.region || '',
+                businessType: answers.businessType || '',
+                industry: answers.industry || '',
+                productReadiness: answers.productReadiness || '',
+                revenue: answers.revenue || '',
+                runway: answers.runway || '',
+                funding: answers.funding || '',
+                risksAssumptions: answers.risksAssumptions || '',
+                tractionSignals: answers.tractionSignals || '',
+                founderProfiles: answers.founderProfiles || '',
+                teamSize: answers.teamSize || '',
+                teamStory: answers.teamStory || '',
+                goals: answers.goals || '',
+                otherInformation: answers.otherInformation || '',
+                ...stageSpecificAnswers
+            };
+
+            console.log('Submitting data:', data);
+            console.log('Script URL:', scriptUrl);
+
+            // Submit to Google Sheets
+            console.log('Attempting to submit to:', scriptUrl);
+            console.log('Data being sent:', JSON.stringify(data, null, 2));
+            
+            fetch(scriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                mode: 'no-cors',
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(result => {
+                console.log('Response:', result);
+                if (result.success) {
+                    alert('✅ Successfully Submitted to Google Sheets!');
+                } else {
+                    alert('❌ Submission Failed: ' + (result.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Submission Failed: ' + error.message);
+            });
+        }
+
+        // Initialize
+        initializeForm();
+    </script>
+</body>
+</html>
