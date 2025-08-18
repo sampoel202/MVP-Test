@@ -1504,6 +1504,7 @@
                     <button onclick="restartForm()" style="margin: 0 10px; padding: 12px 24px; border: none; border-radius: 8px; background: #6B7280; color: white; cursor: pointer; font-size: 16px;">Start Over</button>
                     <button onclick="exportCompleteData()" style="margin: 0 10px; padding: 12px 24px; border: none; border-radius: 8px; background: #0D9488; color: white; cursor: pointer; font-size: 16px;">Export Data</button>
                     <button onclick="submitToGoogleSheets()" style="margin: 0 10px; padding: 12px 24px; border: none; border-radius: 8px; background: #4285f4; color: white; cursor: pointer; font-size: 16px;">Submit to Google Sheets</button>
+                    <button onclick="generateAIReport()" style="margin: 0 10px; padding: 12px 24px; border: none; border-radius: 8px; background: #10b981; color: white; cursor: pointer; font-size: 16px;">🤖 Generate AI Report</button>
                 </div>
             `;
         }
@@ -1660,6 +1661,415 @@
 
         // Initialize - show consent screen first
         // initializeForm(); // This will be called after consent
+
+        // AI Report Generation Functions
+        function generateAIReport() {
+            const results = document.getElementById('results');
+            const existingContent = results.innerHTML;
+            
+            results.innerHTML = existingContent + `
+                <div style="background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 30px 0;">
+                    <h2 style="color: #10b981; text-align: center; margin-bottom: 30px;">🤖 AI-Powered Startup Report</h2>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">🚀 Startup Overview</h3>
+                        <p style="color: #6b7280; line-height: 1.6;">Based on your diagnostic results, ${answers.companyName || 'your startup'} is currently in the ${stageResult.stage} stage with an overall performance score of ${stageResult.score}/10. This indicates your startup is in the ${stageResult.stage === 'Ideation' ? 'early conceptual phase' : stageResult.stage === 'Validation' ? 'problem-solution validation phase' : stageResult.stage === 'Early Traction' ? 'early customer acquisition phase' : stageResult.stage === 'Growth' ? 'scaling phase' : 'mature scaling phase'}.</p>
+                    </div>
+                    
+                                                <div style="margin-bottom: 30px;">
+                                <h3 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">💡 Strategic Recommendations</h3>
+                                <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
+                                    <p style="color: #6b7280; margin-bottom: 20px; font-style: italic;">These recommendations are based on your answers to the stage-specific questions below. Each recommendation shows what you answered and our strategic advice for improvement.</p>
+                                    ${generateRecommendations()}
+                                </div>
+                            </div>
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button onclick="downloadAIReport()" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 0 10px;">📥 Download Report</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateRecommendations() {
+            const stage = stageResult.stage;
+            let recommendations = '';
+            
+            // Get the stage-specific questions for this stage
+            const stageMapping = {
+                'Ideation': 'Ideation',
+                'Ideation → Validation': 'Ideation',
+                'Validation': 'Validation',
+                'Validation → Early Traction': 'Validation',
+                'Early Traction': 'Early Traction',
+                'Early Traction → Growth': 'Early Traction',
+                'Growth': 'Growth',
+                'Growth → Scale': 'Growth',
+                'Scale': 'Scale'
+            };
+            
+            const currentStage = stageMapping[stage] || 'Ideation';
+            const stageQuestionsList = stageQuestions[currentStage];
+            
+            if (!stageQuestionsList) {
+                return '<p style="color: #6b7280;">No stage-specific recommendations available.</p>';
+            }
+            
+            // Analyze each stage-specific question answer
+            stageQuestionsList.forEach(question => {
+                const answer = stageSpecificAnswers[question.name];
+                if (answer) {
+                    // Convert answer to score (1-5 scale)
+                    let score = 0;
+                    if (question.options && question.options.length > 0) {
+                        const optionIndex = question.options.findIndex(option => option === answer);
+                        if (optionIndex !== -1) {
+                            score = optionIndex + 1; // Convert to 1-5 scale
+                        }
+                    }
+                    
+                    // Only recommend areas where they scored 1-3 (need improvement)
+                                                if (score >= 1 && score <= 3) {
+                                const recommendation = getRecommendationForQuestion(currentStage, question.name, score);
+                                if (recommendation) {
+                                    const answerText = answer || 'Not specified';
+                                    recommendations += `
+                                        <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #10b981;">
+                                            <h4 style="margin: 0 0 10px 0; color: #374151; font-size: 14px;">${question.label}</h4>
+                                            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 13px;"><strong>Your answer:</strong> ${answerText}</p>
+                                            <p style="margin: 0; color: #374151; font-weight: 500;"><strong>Our recommendation:</strong> ${recommendation}</p>
+                                        </div>
+                                    `;
+                                }
+                            }
+                }
+            });
+            
+            if (!recommendations) {
+                recommendations = '<p style="color: #10b981; font-weight: 500;">Great job! Your answers indicate you\'re well-positioned in this stage. Focus on execution and moving to the next phase.</p>';
+            }
+            
+            return recommendations;
+        }
+
+        function getRecommendationForQuestion(stage, questionName, score) {
+            const recommendations = {
+                'Ideation': {
+                    'ideation_customer_profile': {
+                        1: 'Focus on defining your target customers clearly - this will help you build the right MVP and avoid wasting resources on the wrong audience.',
+                        2: 'Validate your customer assumptions through structured discovery - this will enable you to create a compelling value proposition.',
+                        3: 'Refine your customer profile based on real feedback - this will help you prioritize features and messaging that resonates.'
+                    },
+                    'ideation_mvp_scope': {
+                        1: 'Define your MVP scope clearly - this will prevent feature creep and help you launch faster with core value.',
+                        2: 'Link each feature to a specific problem - this will ensure your MVP addresses real user needs.',
+                        3: 'Prioritize features based on user feedback - this will help you build what customers actually want.'
+                    },
+                    'ideation_business_model': {
+                        1: 'Define your business model clearly - this will help you understand revenue streams and pricing strategy.',
+                        2: 'Validate key business model assumptions - this will enable you to make informed decisions about partnerships and channels.',
+                        3: 'Test different business model options - this will help you find the most sustainable approach.'
+                    },
+                    'ideation_gtm_thinking': {
+                        1: 'Develop your GTM strategy early - this will help you acquire customers efficiently when you launch.',
+                        2: 'Test different customer acquisition channels - this will enable you to find the most cost-effective approach.',
+                        3: 'Refine your messaging based on market feedback - this will help you connect with your target audience.'
+                    },
+                    'ideation_team_technical': {
+                        1: 'Build technical capabilities in your team - this will enable you to execute your product vision effectively.',
+                        2: 'Develop product execution skills - this will help you build and iterate on your MVP quickly.',
+                        3: 'Strengthen technical leadership - this will help you make better product decisions.'
+                    },
+                    'ideation_team_commercial': {
+                        1: 'Develop commercial skills in your team - this will enable you to acquire customers and generate revenue.',
+                        2: 'Build sales and marketing capabilities - this will help you validate demand and pricing.',
+                        3: 'Strengthen commercial leadership - this will help you build sustainable growth.'
+                    },
+                    'ideation_fundraising_readiness': {
+                        1: 'Define your funding needs clearly - this will help you approach the right investors with confidence.',
+                        2: 'Prepare your fundraising narrative - this will enable you to communicate your vision effectively.',
+                        3: 'Validate your funding assumptions - this will help you raise capital more efficiently.'
+                    },
+                    'ideation_milestones_progress': {
+                        1: 'Set clear milestones and timelines - this will help you track progress and stay focused.',
+                        2: 'Define ownership and accountability - this will enable you to execute your plan effectively.',
+                        3: 'Establish progress tracking systems - this will help you identify and address blockers early.'
+                    }
+                },
+                'Validation': {
+                    'validation_solution_value': {
+                        1: 'Test your solution with real users - this will validate that you\'re solving a real problem.',
+                        2: 'Measure user engagement and retention - this will prove your solution has value.',
+                        3: 'Collect user feedback systematically - this will help you iterate and improve.'
+                    },
+                    'validation_icp_behaviour': {
+                        1: 'Engage with potential customers directly - this will help you understand their needs and behavior.',
+                        2: 'Track customer interest signals - this will validate your target market assumptions.',
+                        3: 'Refine your ICP based on real data - this will help you focus your efforts effectively.'
+                    },
+                    'validation_segment_traction': {
+                        1: 'Analyze which segments show interest - this will help you focus on the most promising markets.',
+                        2: 'Track channel performance - this will enable you to optimize your customer acquisition.',
+                        3: 'Monitor competitor activity - this will help you position your solution effectively.'
+                    },
+                    'validation_mvp_testing': {
+                        1: 'Test your MVP with real users - this will identify usability issues and improvement opportunities.',
+                        2: 'Iterate based on user feedback - this will help you build a better product.',
+                        3: 'Prepare for scale - this will enable you to support more users when you grow.'
+                    },
+                    'validation_gtm_experimentation': {
+                        1: 'Test different GTM strategies - this will help you find what works for your market.',
+                        2: 'Measure GTM performance - this will enable you to optimize your customer acquisition.',
+                        3: 'Refine your approach based on data - this will help you scale efficiently.'
+                    },
+                    'validation_traction_signals': {
+                        1: 'Track key traction metrics - this will help you measure progress and identify opportunities.',
+                        2: 'Analyze user behavior patterns - this will validate your product-market fit.',
+                        3: 'Use data to guide decisions - this will help you focus on what drives growth.'
+                    },
+                    'validation_resource_gaps': {
+                        1: 'Identify key capability gaps - this will help you plan your team and partnerships.',
+                        2: 'Develop plans to fill gaps - this will enable you to execute your strategy effectively.',
+                        3: 'Prioritize resource allocation - this will help you make the most of limited resources.'
+                    },
+                    'validation_financial_planning': {
+                        1: 'Develop financial projections - this will help you plan your growth and funding needs.',
+                        2: 'Track key financial metrics - this will enable you to make informed decisions.',
+                        3: 'Plan for different scenarios - this will help you prepare for uncertainty.'
+                    },
+                    'validation_fundraising_preparation': {
+                        1: 'Develop your fundraising narrative - this will help you communicate your vision effectively.',
+                        2: 'Prepare supporting materials - this will enable you to engage investors confidently.',
+                        3: 'Identify target investors - this will help you focus your fundraising efforts.'
+                    },
+                    'validation_risk_assumption_review': {
+                        1: 'Test key business assumptions - this will help you validate your strategy.',
+                        2: 'Define clear success metrics - this will enable you to measure progress.',
+                        3: 'Use data to guide decisions - this will help you iterate and improve.'
+                    }
+                },
+                'Early Traction': {
+                    'early_traction_customer_retention': {
+                        1: 'Track customer usage and retention - this will help you understand product-market fit.',
+                        2: 'Analyze retention patterns - this will enable you to identify improvement opportunities.',
+                        3: 'Implement retention strategies - this will help you build sustainable growth.'
+                    },
+                    'early_traction_market_signals': {
+                        1: 'Identify your strongest customer segments - this will help you focus your efforts effectively.',
+                        2: 'Adapt to market changes - this will enable you to stay competitive.',
+                        3: 'Refine your positioning - this will help you connect with your target audience.'
+                    },
+                    'early_traction_product_usage': {
+                        1: 'Monitor product performance - this will help you identify and fix issues quickly.',
+                        2: 'Address scaling challenges - this will enable you to support more users.',
+                        3: 'Optimize user experience - this will help you improve retention and engagement.'
+                    },
+                    'early_traction_gtm_execution': {
+                        1: 'Structure your GTM efforts - this will help you acquire customers systematically.',
+                        2: 'Test and optimize channels - this will enable you to scale efficiently.',
+                        3: 'Learn from GTM data - this will help you improve your customer acquisition.'
+                    },
+                    'early_traction_ops_scalability': {
+                        1: 'Establish basic systems and processes - this will help you support growth.',
+                        2: 'Define roles and responsibilities - this will enable you to scale your team.',
+                        3: 'Track operational metrics - this will help you identify improvement opportunities.'
+                    },
+                    'early_traction_legal_compliance': {
+                        1: 'Review legal requirements - this will help you avoid compliance issues.',
+                        2: 'Implement basic legal protections - this will enable you to operate confidently.',
+                        3: 'Plan for regulatory changes - this will help you stay compliant as you grow.'
+                    },
+                    'early_traction_activation_monetization': {
+                        1: 'Define your value proposition clearly - this will help you convert users to customers.',
+                        2: 'Optimize your conversion funnel - this will enable you to monetize more effectively.',
+                        3: 'Test pricing strategies - this will help you maximize revenue.'
+                    },
+                    'early_traction_capability_gaps': {
+                        1: 'Identify critical capability gaps - this will help you plan your team and partnerships.',
+                        2: 'Develop plans to fill gaps - this will enable you to execute your strategy.',
+                        3: 'Prioritize resource allocation - this will help you make the most of limited resources.'
+                    },
+                    'early_traction_people_culture': {
+                        1: 'Define your company culture - this will help you attract and retain the right people.',
+                        2: 'Establish basic HR processes - this will enable you to scale your team effectively.',
+                        3: 'Build performance feedback systems - this will help you develop your people.'
+                    },
+                    'early_traction_financial_planning': {
+                        1: 'Develop financial projections - this will help you plan your growth and funding needs.',
+                        2: 'Track key financial metrics - this will enable you to make informed decisions.',
+                        3: 'Plan for different scenarios - this will help you prepare for uncertainty.'
+                    },
+                    'early_traction_investment_narrative': {
+                        1: 'Develop your investment story - this will help you communicate your vision effectively.',
+                        2: 'Prepare supporting materials - this will enable you to engage investors confidently.',
+                        3: 'Identify target investors - this will help you focus your fundraising efforts.'
+                    },
+                    'early_traction_strategic_planning': {
+                        1: 'Define your strategic priorities - this will help you focus your efforts effectively.',
+                        2: 'Align your team around goals - this will enable you to execute more efficiently.',
+                        3: 'Track progress systematically - this will help you stay on track.'
+                    },
+                    'early_traction_scale_readiness': {
+                        1: 'Assess your scale readiness - this will help you identify and address blockers.',
+                        2: 'Develop scale plans - this will enable you to grow more effectively.',
+                        3: 'Build scale capabilities - this will help you support rapid growth.'
+                    }
+                },
+                'Growth': {
+                    'growth_customer_retention': {
+                        1: 'Implement customer success strategies - this will help you retain and expand customers.',
+                        2: 'Track retention metrics - this will enable you to identify improvement opportunities.',
+                        3: 'Optimize customer experience - this will help you build loyalty and referrals.'
+                    },
+                    'growth_competitive_differentiation': {
+                        1: 'Define your competitive advantages - this will help you stand out in the market.',
+                        2: 'Monitor competitor activity - this will enable you to adapt your positioning.',
+                        3: 'Refine your messaging - this will help you connect with your target audience.'
+                    },
+                    'growth_product_depth': {
+                        1: 'Scale your product infrastructure - this will help you support more users.',
+                        2: 'Expand product features - this will enable you to serve different customer segments.',
+                        3: 'Optimize product performance - this will help you improve user satisfaction.'
+                    },
+                    'growth_gtm_engine': {
+                        1: 'Build repeatable GTM processes - this will help you scale customer acquisition.',
+                        2: 'Optimize your sales funnel - this will enable you to convert more prospects.',
+                        3: 'Scale your GTM team - this will help you accelerate growth.'
+                    },
+                    'growth_systems_tooling': {
+                        1: 'Implement key systems and tools - this will help you scale operations efficiently.',
+                        2: 'Automate repetitive tasks - this will enable you to focus on high-value activities.',
+                        3: 'Build dashboards and reporting - this will help you make data-driven decisions.'
+                    },
+                    'growth_regulatory_compliance': {
+                        1: 'Assess compliance requirements - this will help you avoid regulatory issues.',
+                        2: 'Implement compliance systems - this will enable you to operate confidently.',
+                        3: 'Monitor regulatory changes - this will help you stay compliant as you grow.'
+                    },
+                    'growth_sustainable_metrics': {
+                        1: 'Track sustainable growth metrics - this will help you identify quality growth opportunities.',
+                        2: 'Analyze cohort performance - this will enable you to optimize your customer acquisition.',
+                        3: 'Use data to guide growth decisions - this will help you scale efficiently.'
+                    },
+                    'growth_org_structure': {
+                        1: 'Define organizational structure - this will help you scale your team effectively.',
+                        2: 'Develop leadership capabilities - this will enable you to manage growth.',
+                        3: 'Establish decision-making processes - this will help you execute efficiently.'
+                    },
+                    'growth_financial_discipline': {
+                        1: 'Implement financial controls - this will help you manage growth responsibly.',
+                        2: 'Track key financial metrics - this will enable you to make informed decisions.',
+                        3: 'Plan for different growth scenarios - this will help you prepare for uncertainty.'
+                    },
+                    'growth_institutional_fundraising': {
+                        1: 'Prepare for institutional fundraising - this will help you access growth capital.',
+                        2: 'Develop investor relationships - this will enable you to raise funds more efficiently.',
+                        3: 'Build board governance - this will help you manage investor relationships.'
+                    },
+                    'growth_strategic_focus': {
+                        1: 'Define strategic priorities - this will help you focus your efforts effectively.',
+                        2: 'Align your team around goals - this will enable you to execute more efficiently.',
+                        3: 'Track progress systematically - this will help you stay on track.'
+                    },
+                    'growth_expansion_playbook': {
+                        1: 'Develop expansion strategies - this will help you enter new markets.',
+                        2: 'Test expansion approaches - this will enable you to find what works.',
+                        3: 'Build expansion capabilities - this will help you scale into new markets.'
+                    }
+                },
+                'Scale': {
+                    'scale_enterprise_portfolio': {
+                        1: 'Segment your customer base - this will help you serve different customer types effectively.',
+                        2: 'Develop customer success strategies - this will enable you to retain and expand customers.',
+                        3: 'Track customer outcomes - this will help you demonstrate value and build credibility.'
+                    },
+                    'scale_segment_strategy': {
+                        1: 'Prioritize market segments - this will help you focus your expansion efforts.',
+                        2: 'Monitor market dynamics - this will enable you to adapt your strategy.',
+                        3: 'Refine your positioning - this will help you compete effectively in each segment.'
+                    },
+                    'scale_market_intelligence': {
+                        1: 'Research international markets - this will help you identify expansion opportunities.',
+                        2: 'Develop market entry strategies - this will enable you to enter new markets effectively.',
+                        3: 'Build local capabilities - this will help you succeed in new markets.'
+                    },
+                    'scale_platform_ecosystem': {
+                        1: 'Develop platform capabilities - this will help you serve more customer types.',
+                        2: 'Build integration capabilities - this will enable you to create ecosystem value.',
+                        3: 'Scale your infrastructure - this will help you support enterprise customers.'
+                    },
+                    'scale_international_gtm': {
+                        1: 'Adapt GTM for international markets - this will help you acquire customers globally.',
+                        2: 'Test different GTM approaches - this will enable you to find what works in each market.',
+                        3: 'Scale GTM operations - this will help you accelerate international growth.'
+                    },
+                    'scale_enterprise_systems': {
+                        1: 'Implement enterprise systems - this will help you support larger customers.',
+                        2: 'Standardize processes - this will enable you to deliver consistently at scale.',
+                        3: 'Build governance frameworks - this will help you manage complex operations.'
+                    },
+                    'scale_central_data_platform': {
+                        1: 'Centralize your data - this will help you make better strategic decisions.',
+                        2: 'Build data dashboards - this will enable you to track performance across functions.',
+                        3: 'Use data for planning - this will help you make informed strategic decisions.'
+                    },
+                    'scale_business_leverage': {
+                        1: 'Identify leverage points - this will help you optimize your business model.',
+                        2: 'Track efficiency metrics - this will enable you to identify improvement opportunities.',
+                        3: 'Optimize operations - this will help you improve margins and scale efficiently.'
+                    },
+                    'scale_org_design': {
+                        1: 'Design scalable organization - this will help you support long-term growth.',
+                        2: 'Develop succession plans - this will enable you to build sustainable leadership.',
+                        3: 'Implement talent development - this will help you build a strong team.'
+                    },
+                    'scale_capital_allocation': {
+                        1: 'Implement capital allocation processes - this will help you invest resources effectively.',
+                        2: 'Track capital efficiency - this will enable you to optimize your investments.',
+                        3: 'Plan for different scenarios - this will help you manage financial risk.'
+                    },
+                    'scale_strategic_optionality': {
+                        1: 'Develop strategic options - this will help you plan for different futures.',
+                        2: 'Engage your board - this will enable you to make informed strategic decisions.',
+                        3: 'Plan for strategic outcomes - this will help you maximize long-term value.'
+                    },
+                    'scale_inorganic_growth': {
+                        1: 'Develop partnership strategies - this will help you accelerate growth.',
+                        2: 'Build M&A capabilities - this will enable you to pursue strategic opportunities.',
+                        3: 'Execute inorganic growth - this will help you scale more quickly.'
+                    }
+                }
+            };
+            
+            return recommendations[stage]?.[questionName]?.[score] || null;
+        }
+
+        function downloadAIReport() {
+            const reportText = `
+AI-Powered Startup Report
+Generated: ${new Date().toLocaleDateString()}
+
+STARTUP OVERVIEW
+Based on your diagnostic results, ${answers.companyName || 'your startup'} is currently in the ${stageResult.stage} stage with an overall performance score of ${stageResult.score}/10.
+
+STRATEGIC RECOMMENDATIONS
+${generateRecommendations().replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()}
+
+---
+Report generated by Startup Diagnostic Tool
+Stage: ${stageResult.stage}
+Score: ${stageResult.score}/10
+Company: ${answers.companyName || 'N/A'}
+            `;
+            
+            const blob = new Blob([reportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `startup-ai-report-${answers.companyName || 'startup'}-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
     </script>
 </body>
 </html>
