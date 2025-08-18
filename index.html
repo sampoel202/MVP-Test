@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enhanced Startup Diagnostic System</title>
+    <script src="https://unpkg.com/docx@8.2.3/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #F0FDF4; color: #1F2937; margin: 0; }
@@ -25,10 +27,16 @@
         .hidden { display: none; }
         .success-message { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin: 10px 0; }
         .error-message { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 10px 0; }
-        .consent-screen { text-align: center; padding: 40px 20px; }
+        .consent-screen { text-align: center; padding: 40px 20px; max-width: 800px; margin: 0 auto; }
         .consent-screen h2 { color: #0D9488; margin-bottom: 20px; }
         .consent-screen p { margin-bottom: 30px; line-height: 1.6; }
-        .consent-buttons { display: flex; gap: 15px; justify-content: center; }
+        .consent-details { text-align: left; background: #f8f9fa; border-radius: 8px; padding: 24px; margin: 30px 0; border: 1px solid #e9ecef; }
+        .consent-details h3 { color: #374151; margin: 20px 0 10px 0; font-size: 1.1rem; }
+        .consent-details h3:first-child { margin-top: 0; }
+        .consent-details ul { margin: 15px 0; padding-left: 20px; }
+        .consent-details li { margin: 8px 0; line-height: 1.5; }
+        .consent-details strong { color: #0D9488; }
+        .consent-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 30px; }
         .consent-buttons button:first-child { background-color: #0D9488; }
         .consent-buttons button:last-child { background-color: #6B7280; }
         .metric-score { display: flex; align-items: center; margin: 10px 0; }
@@ -44,11 +52,25 @@
 <body>
     <div class="container">
         <div id="consentScreen" class="consent-screen">
-            <h2>Before we begin...</h2>
-            <p>We use this tool to assess startups and improve our support programmes. By continuing, you agree that your answers may be used for internal analysis.</p>
+            <h2>Startup Diagnostic Assessment</h2>
+            <p>Welcome! This diagnostic tool helps us understand your startup's current stage and identify areas where we can provide targeted support and guidance.</p>
+            
+            <div class="consent-details">
+                <h3>What this involves:</h3>
+                <ul>
+                    <li><strong>26 questions</strong> about your business model, traction, and current challenges</li>
+                    <li><strong>Stage assessment</strong> to determine where your startup fits in the growth journey</li>
+                    <li><strong>Follow-up questions</strong> tailored to your startup's stage</li>
+                    <li><strong>Personalised recommendations</strong> based on your specific situation</li>
+                </ul>
+                
+                <h3>Data usage:</h3>
+                <p>Your responses help us improve our support programmes and provide better guidance to other startups. We may use anonymised data for internal analysis and programme development.</p>
+            </div>
+            
             <div class="consent-buttons">
-                <button onclick="startForm()">Accept and Continue</button>
-                <button onclick="window.location.href='https://google.com'">Decline</button>
+                <button onclick="startForm()">Start Diagnostic</button>
+                <button onclick="window.location.href='https://google.com'">Not Now</button>
             </div>
         </div>
         
@@ -61,7 +83,6 @@
             <div class="results hidden" id="results"></div>
         </div>
     </div>
-
     <script>
         let currentStep = 1;
         let totalSteps = 26;
@@ -160,7 +181,7 @@
                 ]},
                 { label: "How clearly have you defined what your MVP needs to include — and why those features matter?", name: "ideation_mvp_scope", type: "select", options: [
                     "We haven't defined our MVP features or scope yet.",
-                    "We've listed ideas, but haven't prioritized or linked them to the problem.",
+                    "We've listed ideas, but haven't prioritised or linked them to the problem.",
                     "We have a rough MVP scope based on assumptions, not user input.",
                     "We've defined core features based on problem-solution fit and feasibility.",
                     "We've scoped our MVP tightly with a clear reason for each feature."
@@ -434,7 +455,7 @@
                     "Forecasting is ad hoc and we don't update projections consistently.",
                     "Some visibility into revenue and spend, but no real growth planning or controls.",
                     "Basic revenue model and cost tracking in place, but not tightly linked to growth.",
-                    "Strong forecasting with cost controls and evolving monetization model.",
+                    "Strong forecasting with cost controls and evolving monetisation model.",
                     "Robust discipline — 12–24 month forecasts, cost controls, and optimised monetisation tied to growth segments."
                 ]},
                 { label: "How prepared are you for institutional fundraising and ongoing investor/board engagement? (Consider materials, metrics, board cadence, and reporting.)", name: "growth_institutional_fundraising", type: "select", options: [
@@ -467,10 +488,10 @@
                     "We have a structured approach to segment management and track customer outcomes.",
                     "We run a portfolio model with segment-based playbooks, tracked outcomes, and use cases that support market credibility."
                 ]},
-                { label: "How clearly have you prioritized market segments across regions or verticals, and how are you tracking competitive shifts to inform positioning?", name: "scale_segment_strategy", type: "select", options: [
-                    "We haven't clearly prioritized segments or tracked market dynamics.",
+                { label: "How clearly have you prioritised market segments across regions or verticals, and how are you tracking competitive shifts to inform positioning?", name: "scale_segment_strategy", type: "select", options: [
+                    "We haven't clearly prioritised segments or tracked market dynamics.",
                     "We have basic segment ideas, but limited structure or consistency.",
-                    "We're starting to prioritize segments regionally, but lack solid data or a consistent approach.",
+                    "We're starting to prioritise segments regionally, but lack solid data or a consistent approach.",
                     "We've defined priority segments and adapt strategy with some monitoring of competitor/category shifts.",
                     "We've mapped core/emerging segments by region and track category shifts to refine global positioning."
                 ]},
@@ -571,7 +592,7 @@
                     </div>
                     <div class="button-row">
                         ${index > 0 ? '<button type="button" onclick="prevStep()">Back</button>' : '<div></div>'}
-                        ${index < questions.length - 1 ? '<button type="button" onclick="nextStep()">Continue</button>' : '<button type="button" onclick="calculateStage()">Get Results</button>'}
+                        ${index < questions.length - 1 ? '<button type="button" onclick="nextStep()">Continue</button>' : '<button type="button" onclick="calculateStage()">Next Questions</button>'}
                     </div>
                 `;
                 
@@ -760,6 +781,214 @@
             return true;
         }
 
+        // Sophisticated scoring matrix based on business context
+        const scoringMatrix = {
+            'B2B': {
+                'Tier1': {
+                    'SaaS': {
+                        'Lean': {
+                            'Revenue': { red: 0, amber: 60000, green: 300000 },
+                            'Customers/Users': { red: 0, amber: 8, green: 40 },
+                            'Funding Raised': { red: 0, amber: 350000, green: 3500000 },
+                            'Team Size': { red: 0, amber: 4, green: 15 },
+                            'Burn Rate/Runway': { red: 0, amber: 3, green: 7 }
+                        },
+                        'CapitalIntensive': {
+                            'Revenue': { red: 0, amber: 80000, green: 400000 },
+                            'Customers/Users': { red: 0, amber: 10, green: 50 },
+                            'Funding Raised': { red: 0, amber: 500000, green: 5000000 },
+                            'Team Size': { red: 0, amber: 5, green: 20 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 9 }
+                        }
+                    },
+                    'Marketplace': {
+                        'Lean': {
+                            'Revenue': { red: 0, amber: 75000, green: 375000 },
+                            'Customers/Users': { red: 0, amber: 10, green: 50 },
+                            'Funding Raised': { red: 0, amber: 350000, green: 3500000 },
+                            'Team Size': { red: 0, amber: 5, green: 20 },
+                            'Burn Rate/Runway': { red: 0, amber: 3, green: 7 }
+                        },
+                        'CapitalIntensive': {
+                            'Revenue': { red: 0, amber: 80000, green: 400000 },
+                            'Customers/Users': { red: 0, amber: 12, green: 60 },
+                            'Funding Raised': { red: 0, amber: 500000, green: 5000000 },
+                            'Team Size': { red: 0, amber: 6, green: 25 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 9 }
+                        }
+                    },
+                    'Other': {
+                        'Lean': {
+                            'Revenue': { red: 0, amber: 75000, green: 375000 },
+                            'Customers/Users': { red: 0, amber: 7, green: 35 },
+                            'Funding Raised': { red: 0, amber: 350000, green: 3500000 },
+                            'Team Size': { red: 0, amber: 4, green: 18 },
+                            'Burn Rate/Runway': { red: 0, amber: 3, green: 7 }
+                        },
+                        'CapitalIntensive': {
+                            'Revenue': { red: 0, amber: 100000, green: 500000 },
+                            'Customers/Users': { red: 0, amber: 9, green: 45 },
+                            'Funding Raised': { red: 0, amber: 500000, green: 5000000 },
+                            'Team Size': { red: 0, amber: 5, green: 22 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 9 }
+                        }
+                    }
+                },
+                'Tier2/3': {
+                    'SaaS': {
+                        'Lean': {
+                            'Revenue': { red: 0, amber: 37500, green: 187500 },
+                            'Customers/Users': { red: 0, amber: 4, green: 20 },
+                            'Funding Raised': { red: 0, amber: 210000, green: 2100000 },
+                            'Team Size': { red: 0, amber: 3, green: 12 },
+                            'Burn Rate/Runway': { red: 0, amber: 3, green: 5 }
+                        },
+                        'CapitalIntensive': {
+                            'Revenue': { red: 0, amber: 50000, green: 250000 },
+                            'Customers/Users': { red: 0, amber: 5, green: 25 },
+                            'Funding Raised': { red: 0, amber: 300000, green: 3000000 },
+                            'Team Size': { red: 0, amber: 4, green: 15 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 6 }
+                        }
+                    },
+                    'Marketplace': {
+                        'Lean': {
+                            'Revenue': { red: 0, amber: 37500, green: 187500 },
+                            'Customers/Users': { red: 0, amber: 5, green: 25 },
+                            'Funding Raised': { red: 0, amber: 210000, green: 2100000 },
+                            'Team Size': { red: 0, amber: 3, green: 12 },
+                            'Burn Rate/Runway': { red: 0, amber: 3, green: 5 }
+                        },
+                        'CapitalIntensive': {
+                            'Revenue': { red: 0, amber: 50000, green: 250000 },
+                            'Customers/Users': { red: 0, amber: 6, green: 30 },
+                            'Funding Raised': { red: 0, amber: 300000, green: 3000000 },
+                            'Team Size': { red: 0, amber: 4, green: 15 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 6 }
+                        }
+                    },
+                    'Other': {
+                        'Lean': {
+                            'Revenue': { red: 0, amber: 37500, green: 187500 },
+                            'Customers/Users': { red: 0, amber: 4, green: 20 },
+                            'Funding Raised': { red: 0, amber: 210000, green: 2100000 },
+                            'Team Size': { red: 0, amber: 3, green: 12 },
+                            'Burn Rate/Runway': { red: 0, amber: 3, green: 5 }
+                        },
+                        'CapitalIntensive': {
+                            'Revenue': { red: 0, amber: 50000, green: 250000 },
+                            'Customers/Users': { red: 0, amber: 5, green: 25 },
+                            'Funding Raised': { red: 0, amber: 300000, green: 3000000 },
+                            'Team Size': { red: 0, amber: 4, green: 15 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 6 }
+                        }
+                    }
+                }
+            },
+            'B2C': {
+                'Tier1': {
+                    'SaaS': {
+                        'Lean': {
+                            'Revenue': { red: 0, amber: 112500, green: 562500 },
+                            'Customers/Users': { red: 0, amber: 60, green: 250 },
+                            'Funding Raised': { red: 0, amber: 420000, green: 4200000 },
+                            'Team Size': { red: 0, amber: 5, green: 25 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 10 }
+                        },
+                        'CapitalIntensive': {
+                            'Revenue': { red: 0, amber: 120000, green: 600000 },
+                            'Customers/Users': { red: 0, amber: 75, green: 300 },
+                            'Funding Raised': { red: 0, amber: 600000, green: 6000000 },
+                            'Team Size': { red: 0, amber: 6, green: 30 },
+                            'Burn Rate/Runway': { red: 0, amber: 5, green: 12 }
+                        }
+                    },
+                    'Marketplace': {
+                        'Lean': {
+                            'Revenue': { red: 0, amber: 112500, green: 562500 },
+                            'Customers/Users': { red: 0, amber: 75, green: 300 },
+                            'Funding Raised': { red: 0, amber: 420000, green: 4200000 },
+                            'Team Size': { red: 0, amber: 6, green: 30 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 10 }
+                        },
+                        'CapitalIntensive': {
+                            'Revenue': { red: 0, amber: 150000, green: 750000 },
+                            'Customers/Users': { red: 0, amber: 100, green: 400 },
+                            'Funding Raised': { red: 0, amber: 600000, green: 6000000 },
+                            'Team Size': { red: 0, amber: 7, green: 35 },
+                            'Burn Rate/Runway': { red: 0, amber: 5, green: 12 }
+                        }
+                    },
+                    'Other': {
+                        'Lean': {
+                            'Revenue': { red: 0, amber: 90000, green: 400000 },
+                            'Customers/Users': { red: 0, amber: 50, green: 200 },
+                            'Funding Raised': { red: 0, amber: 420000, green: 4200000 },
+                            'Team Size': { red: 0, amber: 5, green: 22 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 10 }
+                        },
+                        'CapitalIntensive': {
+                            'Revenue': { red: 0, amber: 150000, green: 750000 },
+                            'Customers/Users': { red: 0, amber: 60, green: 250 },
+                            'Funding Raised': { red: 0, amber: 600000, green: 6000000 },
+                            'Team Size': { red: 0, amber: 6, green: 28 },
+                            'Burn Rate/Runway': { red: 0, amber: 5, green: 12 }
+                        }
+                    }
+                },
+                'Tier2/3': {
+                    'SaaS': {
+                        'Lean': {
+                            'Revenue': { red: 0, amber: 56250, green: 281250 },
+                            'Customers/Users': { red: 0, amber: 40, green: 150 },
+                            'Funding Raised': { red: 0, amber: 252000, green: 2520000 },
+                            'Team Size': { red: 0, amber: 4, green: 16 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 6 }
+                        },
+                        'CapitalIntensive': {
+                            'Revenue': { red: 0, amber: 75000, green: 375000 },
+                            'Customers/Users': { red: 0, amber: 50, green: 200 },
+                            'Funding Raised': { red: 0, amber: 360000, green: 3600000 },
+                            'Team Size': { red: 0, amber: 5, green: 20 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 7 }
+                        }
+                    },
+                    'Marketplace': {
+                        'Lean': {
+                            'Revenue': { red: 0, amber: 56250, green: 281250 },
+                            'Customers/Users': { red: 0, amber: 60, green: 250 },
+                            'Funding Raised': { red: 0, amber: 252000, green: 2520000 },
+                            'Team Size': { red: 0, amber: 4, green: 16 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 6 }
+                        },
+                        'CapitalIntensive': {
+                            'Revenue': { red: 0, amber: 75000, green: 375000 },
+                            'Customers/Users': { red: 0, amber: 75, green: 300 },
+                            'Funding Raised': { red: 0, amber: 360000, green: 3600000 },
+                            'Team Size': { red: 0, amber: 5, green: 20 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 7 }
+                        }
+                    },
+                    'Other': {
+                        'Lean': {
+                            'Revenue': { red: 0, amber: 56250, green: 281250 },
+                            'Customers/Users': { red: 0, amber: 40, green: 150 },
+                            'Funding Raised': { red: 0, amber: 252000, green: 2520000 },
+                            'Team Size': { red: 0, amber: 4, green: 16 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 6 }
+                        },
+                        'CapitalIntensive': {
+                            'Revenue': { red: 0, amber: 60000, green: 300000 },
+                            'Customers/Users': { red: 0, amber: 50, green: 200 },
+                            'Funding Raised': { red: 0, amber: 360000, green: 3600000 },
+                            'Team Size': { red: 0, amber: 5, green: 20 },
+                            'Burn Rate/Runway': { red: 0, amber: 4, green: 7 }
+                        }
+                    }
+                }
+            }
+        };
+
         function calculateStage() {
             collectAnswers();
             
@@ -818,41 +1047,97 @@
             
             const profile = `${businessModel}_${region}_${businessType}_${industry}`;
 
-            // Simplified scoring for demo
+            // Sophisticated contextual scoring using the matrix
             let totalScore = 0;
             let scoreCount = 0;
+            let detailedScores = {};
 
-            // Score quantitative metrics
-            const revenue = parseFloat(answers.revenue) || 0;
-            const customers = parseFloat(answers.customers) || 0;
-            const funding = parseFloat(answers.funding) || 0;
-            const teamSize = parseFloat(answers.teamSize) || 1;
-            const runway = parseFloat(answers.runway) || 0;
+            // Get the scoring thresholds for this business profile
+            const thresholds = scoringMatrix[businessModel]?.[region]?.[businessType]?.[industry];
+            
+            if (thresholds) {
+                // Score Revenue
+                const revenue = parseFloat(answers.revenue) || 0;
+                let revenueScore = 0;
+                if (revenue >= thresholds['Revenue'].green) revenueScore = 9;
+                else if (revenue >= thresholds['Revenue'].amber) revenueScore = 5;
+                else revenueScore = 2;
+                totalScore += revenueScore;
+                scoreCount++;
+                detailedScores.revenue = { value: revenue, score: revenueScore, thresholds: thresholds['Revenue'] };
 
-            if (revenue > 100000) totalScore += 9;
-            else if (revenue > 50000) totalScore += 5;
-            else totalScore += 2;
-            scoreCount++;
+                // Score Customers/Users
+                const customers = parseFloat(answers.customers) || 0;
+                let customersScore = 0;
+                if (customers >= thresholds['Customers/Users'].green) customersScore = 9;
+                else if (customers >= thresholds['Customers/Users'].amber) customersScore = 5;
+                else customersScore = 2;
+                totalScore += customersScore;
+                scoreCount++;
+                detailedScores.customers = { value: customers, score: customersScore, thresholds: thresholds['Customers/Users'] };
 
-            if (customers > 100) totalScore += 9;
-            else if (customers > 50) totalScore += 5;
-            else totalScore += 2;
-            scoreCount++;
+                // Score Funding Raised
+                const funding = parseFloat(answers.funding) || 0;
+                let fundingScore = 0;
+                if (funding >= thresholds['Funding Raised'].green) fundingScore = 9;
+                else if (funding >= thresholds['Funding Raised'].amber) fundingScore = 5;
+                else fundingScore = 2;
+                totalScore += fundingScore;
+                scoreCount++;
+                detailedScores.funding = { value: funding, score: fundingScore, thresholds: thresholds['Funding Raised'] };
 
-            if (funding > 1000000) totalScore += 9;
-            else if (funding > 500000) totalScore += 5;
-            else totalScore += 2;
-            scoreCount++;
+                // Score Team Size
+                const teamSize = parseFloat(answers.teamSize) || 1;
+                let teamScore = 0;
+                if (teamSize >= thresholds['Team Size'].green) teamScore = 9;
+                else if (teamSize >= thresholds['Team Size'].amber) teamScore = 5;
+                else teamScore = 2;
+                totalScore += teamScore;
+                scoreCount++;
+                detailedScores.teamSize = { value: teamSize, score: teamScore, thresholds: thresholds['Team Size'] };
 
-            if (teamSize > 10) totalScore += 9;
-            else if (teamSize > 5) totalScore += 5;
-            else totalScore += 2;
-            scoreCount++;
+                // Score Burn Rate/Runway
+                const runway = parseFloat(answers.runway) || 0;
+                let runwayScore = 0;
+                if (runway >= thresholds['Burn Rate/Runway'].green) runwayScore = 9;
+                else if (runway >= thresholds['Burn Rate/Runway'].amber) runwayScore = 5;
+                else runwayScore = 2;
+                totalScore += runwayScore;
+                scoreCount++;
+                detailedScores.runway = { value: runway, score: runwayScore, thresholds: thresholds['Burn Rate/Runway'] };
+            } else {
+                // Fallback to simple scoring if profile not found
+                const revenue = parseFloat(answers.revenue) || 0;
+                const customers = parseFloat(answers.customers) || 0;
+                const funding = parseFloat(answers.funding) || 0;
+                const teamSize = parseFloat(answers.teamSize) || 1;
+                const runway = parseFloat(answers.runway) || 0;
 
-            if (runway > 12) totalScore += 9;
-            else if (runway > 6) totalScore += 5;
-            else totalScore += 2;
-            scoreCount++;
+                if (revenue > 100000) totalScore += 9;
+                else if (revenue > 50000) totalScore += 5;
+                else totalScore += 2;
+                scoreCount++;
+
+                if (customers > 100) totalScore += 9;
+                else if (customers > 50) totalScore += 5;
+                else totalScore += 2;
+                scoreCount++;
+
+                if (funding > 1000000) totalScore += 9;
+                else if (funding > 500000) totalScore += 5;
+                else totalScore += 2;
+                scoreCount++;
+
+                if (teamSize > 10) totalScore += 9;
+                else if (teamSize > 5) totalScore += 5;
+                else totalScore += 2;
+                scoreCount++;
+
+                if (runway > 12) totalScore += 9;
+                else if (runway > 6) totalScore += 5;
+                else totalScore += 2;
+                scoreCount++;
+            }
 
             const averageScore = totalScore / scoreCount;
 
@@ -877,6 +1162,14 @@
                 stage: stage,
                 score: averageScore.toFixed(2),
                 profile: profile,
+                detailedScores: detailedScores,
+                thresholds: thresholds || null,
+                businessContext: {
+                    model: businessModel,
+                    region: region,
+                    type: businessType,
+                    industry: industry
+                },
                 totalScore: totalScore,
                 scoreCount: scoreCount
             };
@@ -1008,778 +1301,211 @@
             const form = document.getElementById('startupForm');
             form.style.display = 'none';
             
-            // Calculate individual metric scores
-            const revenue = parseFloat(answers.revenue) || 0;
-            const customers = parseFloat(answers.customers) || 0;
-            const funding = parseFloat(answers.funding) || 0;
-            const teamSize = parseFloat(answers.teamSize) || 1;
-            const runway = parseFloat(answers.runway) || 0;
+            // Use the contextual scores from stageResult
+            const detailedScores = stageResult.detailedScores || {};
+            const thresholds = stageResult.thresholds;
+            const businessContext = stageResult.businessContext;
             
-            let revenueScore = 2;
-            if (revenue > 100000) revenueScore = 9;
-            else if (revenue > 50000) revenueScore = 5;
+            // Get scores from detailed analysis
+            const revenueScore = detailedScores.revenue?.score || 2;
+            const customersScore = detailedScores.customers?.score || 2;
+            const fundingScore = detailedScores.funding?.score || 2;
+            const teamScore = detailedScores.teamSize?.score || 2;
+            const runwayScore = detailedScores.runway?.score || 2;
             
-            let customersScore = 2;
-            if (customers > 100) customersScore = 9;
-            else if (customers > 50) customersScore = 5;
-            
-            let fundingScore = 2;
-            if (funding > 1000000) fundingScore = 9;
-            else if (funding > 500000) fundingScore = 5;
-            
-            let teamScore = 2;
-            if (teamSize > 10) teamScore = 9;
-            else if (teamSize > 5) teamScore = 5;
-            
-            let runwayScore = 2;
-            if (runway > 12) runwayScore = 9;
-            else if (runway > 6) runwayScore = 5;
-            
-            // Generate recommendations
+            // Generate contextual recommendations
             const recommendations = [];
-            if (revenueScore <= 2) recommendations.push("Focus on generating early revenue through pilot programmes or beta customers");
-            if (customersScore <= 2) recommendations.push("Prioritise customer acquisition and validation of your value proposition");
-            if (fundingScore <= 2) recommendations.push("Consider raising funding to accelerate growth and extend runway");
-            if (teamScore <= 2) recommendations.push("Build out your team with key hires to support growth");
-            if (runwayScore <= 2) recommendations.push("Extend your runway through cost optimisation or additional funding");
+            if (revenueScore <= 2) {
+                const threshold = detailedScores.revenue?.thresholds;
+                if (threshold) {
+                    recommendations.push(`Focus on reaching £${threshold.amber.toLocaleString()} revenue (amber zone) to improve your score from ${revenueScore}/10`);
+                } else {
+                    recommendations.push("Focus on generating early revenue through pilot programmes or beta customers");
+                }
+            }
+            if (customersScore <= 2) {
+                const threshold = detailedScores.customers?.thresholds;
+                if (threshold) {
+                    recommendations.push(`Prioritise reaching ${threshold.amber} customers/users (amber zone) to improve your score from ${customersScore}/10`);
+                } else {
+                    recommendations.push("Prioritise customer acquisition and validation of your value proposition");
+                }
+            }
+            if (fundingScore <= 2) {
+                const threshold = detailedScores.funding?.thresholds;
+                if (threshold) {
+                    recommendations.push(`Consider raising £${(threshold.amber/1000000).toFixed(1)}M+ funding (amber zone) to improve your score from ${fundingScore}/10`);
+                } else {
+                    recommendations.push("Consider raising funding to accelerate growth and extend runway");
+                }
+            }
+            if (teamScore <= 2) {
+                const threshold = detailedScores.teamSize?.thresholds;
+                if (threshold) {
+                    recommendations.push(`Build your team to ${threshold.amber}+ people (amber zone) to improve your score from ${teamScore}/10`);
+                } else {
+                    recommendations.push("Build out your team with key hires to support growth");
+                }
+            }
+            if (runwayScore <= 2) {
+                const threshold = detailedScores.runway?.thresholds;
+                if (threshold) {
+                    recommendations.push(`Extend runway to ${threshold.amber}+ months (amber zone) to improve your score from ${runwayScore}/10`);
+                } else {
+                    recommendations.push("Extend your runway through cost optimisation or additional funding");
+                }
+            }
             
             const results = document.getElementById('results');
             results.style.display = 'block';
             results.innerHTML = `
-                <h2>📊 Your Complete Startup Diagnostic Results</h2>
-                
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="font-size: 24px; color: #0D9488; margin-bottom: 15px;">You're currently in: ${stageResult.stage.toUpperCase()}</h3>
-                    <p><strong>Overall Score:</strong> ${stageResult.score}/10</p>
-                    <p><strong>Profile:</strong> ${stageResult.profile}</p>
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="color: #0D9488; font-size: 32px; margin-bottom: 10px;">🚀 STARTUP DIAGNOSTIC DASHBOARD</h2>
+                    <p style="color: #6B7280; font-size: 18px;">Your complete performance analysis</p>
                 </div>
                 
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h4>Metric Breakdown:</h4>
-                    <div class="metric-score">
-                        <span class="label">Revenue:</span>
-                        <span class="score score-${revenueScore <= 2 ? 'red' : revenueScore <= 5 ? 'amber' : 'green'}">${revenueScore}/10</span>
+                <!-- 3x2 Grid Dashboard -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                    <!-- Revenue -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 15px;">💰</div>
+                        <h4 style="margin: 0 0 15px 0; color: #374151;">REVENUE</h4>
+                        <div class="gauge-container" style="margin: 20px 0; position: relative;">
+                            <svg width="120" height="120" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="${revenueScore <= 2 ? '#ef4444' : revenueScore <= 5 ? '#f59e0b' : '#10b981'}" 
+                                        stroke-width="8" stroke-dasharray="${(revenueScore/10) * 314}" stroke-dashoffset="0" 
+                                        transform="rotate(-90 60 60)" stroke-linecap="round"/>
+                            </svg>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: bold; color: #374151;">
+                                ${revenueScore}/10
+                            </div>
+                        </div>
+                        <div style="font-size: 14px; color: ${revenueScore <= 2 ? '#ef4444' : revenueScore <= 5 ? '#f59e0b' : '#10b981'}; font-weight: bold; margin-bottom: 8px;">
+                            ${revenueScore <= 2 ? 'Red Zone' : revenueScore <= 5 ? 'Amber Zone' : 'Green Zone'}
+                        </div>
+
                     </div>
-                    <div class="metric-score">
-                        <span class="label">Customers:</span>
-                        <span class="score score-${customersScore <= 2 ? 'red' : customersScore <= 5 ? 'amber' : 'green'}">${customersScore}/10</span>
+                    
+                    <!-- Customers -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 15px;">👥</div>
+                        <h4 style="margin: 0 0 15px 0; color: #374151;">CUSTOMERS</h4>
+                        <div class="gauge-container" style="margin: 20px 0; position: relative;">
+                            <svg width="120" height="120" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="${customersScore <= 2 ? '#ef4444' : customersScore <= 5 ? '#f59e0b' : '#10b981'}" 
+                                        stroke-width="8" stroke-dasharray="${(customersScore/10) * 314}" stroke-dashoffset="0" 
+                                        transform="rotate(-90 60 60)" stroke-linecap="round"/>
+                            </svg>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: bold; color: #374151;">
+                                ${customersScore}/10
+                            </div>
+                        </div>
+                        <div style="font-size: 14px; color: ${customersScore <= 2 ? '#ef4444' : customersScore <= 5 ? '#f59e0b' : '#10b981'}; font-weight: bold; margin-bottom: 8px;">
+                            ${customersScore <= 2 ? 'Red Zone' : customersScore <= 5 ? 'Amber Zone' : 'Green Zone'}
+                        </div>
+
                     </div>
-                    <div class="metric-score">
-                        <span class="label">Funding:</span>
-                        <span class="score score-${fundingScore <= 2 ? 'red' : fundingScore <= 5 ? 'amber' : 'green'}">${fundingScore}/10</span>
+                    
+                    <!-- Funding -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 15px;">💸</div>
+                        <h4 style="margin: 0 0 15px 0; color: #374151;">FUNDING</h4>
+                        <div class="gauge-container" style="margin: 20px 0; position: relative;">
+                            <svg width="120" height="120" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="${fundingScore <= 2 ? '#ef4444' : fundingScore <= 5 ? '#f59e0b' : '#10b981'}" 
+                                        stroke-width="8" stroke-dasharray="${(fundingScore/10) * 314}" stroke-dashoffset="0" 
+                                        transform="rotate(-90 60 60)" stroke-linecap="round"/>
+                            </svg>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: bold; color: #374151;">
+                                ${fundingScore}/10
+                            </div>
+                        </div>
+                        <div style="font-size: 14px; color: ${fundingScore <= 2 ? '#ef4444' : fundingScore <= 5 ? '#f59e0b' : '#10b981'}; font-weight: bold; margin-bottom: 8px;">
+                            ${fundingScore <= 2 ? 'Red Zone' : fundingScore <= 5 ? 'Amber Zone' : 'Green Zone'}
+                        </div>
+
                     </div>
-                    <div class="metric-score">
-                        <span class="label">Team Size:</span>
-                        <span class="score score-${teamScore <= 2 ? 'red' : teamScore <= 5 ? 'amber' : 'green'}">${teamScore}/10</span>
+                    
+                    <!-- Team Size -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 15px;">👨‍💼</div>
+                        <h4 style="margin: 0 0 15px 0; color: #374151;">TEAM SIZE</h4>
+                        <div class="gauge-container" style="margin: 20px 0; position: relative;">
+                            <svg width="120" height="120" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="${teamScore <= 2 ? '#ef4444' : teamScore <= 5 ? '#f59e0b' : '#10b981'}" 
+                                        stroke-width="8" stroke-dasharray="${(teamScore/10) * 314}" stroke-dashoffset="0" 
+                                        transform="rotate(-90 60 60)" stroke-linecap="round"/>
+                            </svg>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: bold; color: #374151;">
+                                ${teamScore}/10
+                            </div>
+                        </div>
+                        <div style="font-size: 14px; color: ${teamScore <= 2 ? '#ef4444' : teamScore <= 5 ? '#f59e0b' : '#10b981'}; font-weight: bold; margin-bottom: 8px;">
+                            ${teamScore <= 2 ? 'Red Zone' : teamScore <= 5 ? 'Amber Zone' : 'Green Zone'}
+                        </div>
+
                     </div>
-                    <div class="metric-score">
-                        <span class="label">Runway:</span>
-                        <span class="score score-${runwayScore <= 2 ? 'red' : runwayScore <= 5 ? 'amber' : 'green'}">${runwayScore}/10</span>
+                    
+                    <!-- Runway -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 15px;">⏰</div>
+                        <h4 style="margin: 0 0 15px 0; color: #374151;">RUNWAY</h4>
+                        <div class="gauge-container" style="margin: 20px 0; position: relative;">
+                            <svg width="120" height="120" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="${runwayScore <= 2 ? '#ef4444' : runwayScore <= 5 ? '#f59e0b' : '#10b981'}" 
+                                        stroke-width="8" stroke-dasharray="${(runwayScore/10) * 314}" stroke-dashoffset="0" 
+                                        transform="rotate(-90 60 60)" stroke-linecap="round"/>
+                            </svg>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: bold; color: #374151;">
+                                ${runwayScore}/10
+                            </div>
+                        </div>
+                        <div style="font-size: 14px; color: ${runwayScore <= 2 ? '#ef4444' : runwayScore <= 5 ? '#f59e0b' : '#10b981'}; font-weight: bold; margin-bottom: 8px;">
+                            ${runwayScore <= 2 ? 'Red Zone' : runwayScore <= 5 ? 'Amber Zone' : 'Green Zone'}
+                        </div>
+
+                    </div>
+                    
+                    <!-- Overall Score -->
+                    <div style="background: linear-gradient(135deg, #0D9488, #0891b2); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; color: white;">
+                        <div style="font-size: 24px; margin-bottom: 15px;">📊</div>
+                        <h4 style="margin: 0 0 15px 0; color: white;">OVERALL</h4>
+                        <div class="gauge-container" style="margin: 20px 0; position: relative;">
+                            <svg width="120" height="120" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="8"/>
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="white" 
+                                        stroke-width="8" stroke-dasharray="${(parseFloat(stageResult.score)/10) * 314}" stroke-dashoffset="0" 
+                                        transform="rotate(-90 60 60)" stroke-linecap="round"/>
+                            </svg>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: bold; color: white;">
+                                ${stageResult.score}/10
+                            </div>
+                        </div>
+                        <div style="font-size: 14px; color: rgba(255,255,255,0.9); font-weight: bold; margin-bottom: 8px;">
+                            ${parseFloat(stageResult.score) >= 7 ? 'Excellent' : parseFloat(stageResult.score) >= 5 ? 'Good' : 'Developing'}
+                        </div>
                     </div>
                 </div>
                 
-                ${recommendations.length > 0 ? `
-                <div class="recommendations">
-                    <h4>💡 Recommendations:</h4>
-                    <ul>
-                        ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                    </ul>
+                <!-- Stage and Score Summary -->
+                <div style="background: linear-gradient(135deg, #1f2937, #374151); padding: 30px; border-radius: 16px; text-align: center; color: white; margin-bottom: 30px;">
+                    <h2 style="margin: 0 0 15px 0; font-size: 28px; color: #fbbf24;">STAGE: ${stageResult.stage.toUpperCase()}</h2>
+                    <div style="font-size: 48px; font-weight: bold; color: #10b981; margin-bottom: 10px;">${stageResult.score}/10</div>
+                    <p style="margin: 0; color: #d1d5db; font-size: 16px;">Overall Performance Score</p>
                 </div>
-                ` : ''}
                 
-                <div style="margin-top: 20px;">
-                    <button onclick="generateAIReport()" style="background: #0D9488; margin-right: 10px;">🤖 Generate AI Report</button>
-                    <button onclick="restartForm()" style="margin-right: 10px;">Start Over</button>
-                    <button onclick="exportCompleteData()" style="margin-right: 10px;">Export Data</button>
-                    <button onclick="submitToGoogleSheets()" style="background: #4285f4;">Submit to Google Sheets</button>
+                <!-- Action Buttons -->
+                <div style="text-align: center; margin-top: 30px;">
+                    <button onclick="restartForm()" style="margin: 0 10px; padding: 12px 24px; border: none; border-radius: 8px; background: #6B7280; color: white; cursor: pointer; font-size: 16px;">Start Over</button>
+                    <button onclick="exportCompleteData()" style="margin: 0 10px; padding: 12px 24px; border: none; border-radius: 8px; background: #0D9488; color: white; cursor: pointer; font-size: 16px;">Export Data</button>
+                    <button onclick="submitToGoogleSheets()" style="margin: 0 10px; padding: 12px 24px; border: none; border-radius: 8px; background: #4285f4; color: white; cursor: pointer; font-size: 16px;">Submit to Google Sheets</button>
                 </div>
             `;
-        }
-
-        function generateAIReport() {
-            const results = document.getElementById('results');
-            const existingContent = results.innerHTML;
-            
-            results.innerHTML = existingContent + `
-                <div class="success-message">
-                    <h3>🤖 Generating AI Analysis...</h3>
-                    <p>Please wait while our AI analyses your startup data and generates a comprehensive report...</p>
-                    <div style="margin-top: 10px;">
-                        <label>
-                            <input type="checkbox" id="useRealAI" onchange="toggleAIAnalysis()"> Use Real AI (OpenAI/Claude)
-                        </label>
-                    </div>
-                </div>
-            `;
-
-            // Prepare data for AI analysis
-            const aiData = {
-                startup: {
-                    name: answers.companyName || 'Unknown',
-                    founder: answers.founderName || 'Unknown',
-                    email: answers.email || 'Unknown',
-                    website: answers.companyWebsite || 'N/A',
-                    stage: stageResult.stage,
-                    score: stageResult.score,
-                    profile: stageResult.profile
-                },
-                metrics: {
-                    revenue: parseFloat(answers.revenue) || 0,
-                    customers: parseFloat(answers.customers) || 0,
-                    funding: parseFloat(answers.funding) || 0,
-                    teamSize: parseFloat(answers.teamSize) || 1,
-                    runway: parseFloat(answers.runway) || 0
-                },
-                business: {
-                    model: answers.businessModel || 'Unknown',
-                    region: answers.region || 'Unknown',
-                    type: answers.businessType || 'Unknown',
-                    industry: answers.industry || 'Unknown',
-                    productReadiness: answers.productReadiness || 'Unknown',
-                    goToMarket: answers.goToMarket || 'Unknown',
-                    engagementQuality: answers.engagementQuality || 'Unknown'
-                },
-                narrative: {
-                    opportunity: answers.opportunitySolution || 'Not provided',
-                    whyNow: answers.whyNow || 'Not provided',
-                    targetCustomer: answers.targetCustomer || 'Not provided',
-                    marketSizing: answers.marketSizing || 'Not provided',
-                    risksAssumptions: answers.risksAssumptions || 'Not provided',
-                    founderProfiles: answers.founderProfiles || 'Not provided',
-                    teamStory: answers.teamStory || 'Not provided'
-                },
-                traction: {
-                    signals: answers.tractionSignals || [],
-                    goals: answers.goals || []
-                },
-                stageSpecific: stageSpecificAnswers
-            };
-
-            // Check if user wants real AI
-            const useRealAI = document.getElementById('useRealAI')?.checked || false;
-            
-            if (useRealAI) {
-                callRealAI(aiData);
-            } else {
-                // Use enhanced rule-based analysis
-                setTimeout(() => {
-                    const aiReport = generateComprehensiveReport(aiData);
-                    displayAIReport(aiReport);
-                }, 3000);
-            }
-        }
-
-        function toggleAIAnalysis() {
-            const useRealAI = document.getElementById('useRealAI').checked;
-            const results = document.getElementById('results');
-            const successMessage = results.querySelector('.success-message');
-            
-            if (successMessage) {
-                const statusText = successMessage.querySelector('p');
-                if (statusText) {
-                    statusText.textContent = useRealAI ? 
-                        'Connecting to AI service... Please ensure you have API keys configured.' :
-                        'Using enhanced rule-based analysis...';
-                }
-            }
-        }
-
-        async function callRealAI(data) {
-            try {
-                // Example OpenAI integration
-                const prompt = generateAIPrompt(data);
-                
-                // You would need to configure your API key
-                const response = await callOpenAI(prompt);
-                
-                if (response.success) {
-                    displayAIReport(response.report);
-                } else {
-                    // Fallback to rule-based analysis
-                    console.log('AI API failed, using rule-based analysis');
-                    const aiReport = generateComprehensiveReport(data);
-                    displayAIReport(aiReport);
-                }
-            } catch (error) {
-                console.error('AI API error:', error);
-                // Fallback to rule-based analysis
-                const aiReport = generateComprehensiveReport(data);
-                displayAIReport(aiReport);
-            }
-        }
-
-        function generateAIPrompt(data) {
-            return `Analyze this startup data and provide a comprehensive report:
-
-Startup: ${data.startup.name}
-Stage: ${data.startup.stage}
-Industry: ${data.business.industry}
-Revenue: $${data.metrics.revenue}
-Customers: ${data.metrics.customers}
-Funding: $${data.metrics.funding}
-Team Size: ${data.metrics.teamSize}
-Runway: ${data.metrics.runway} months
-
-Business Model: ${data.business.model}
-Region: ${data.business.region}
-Product Readiness: ${data.business.productReadiness}
-
-Please provide:
-1. Executive Summary
-2. Strengths and Weaknesses
-3. Opportunities and Threats
-4. Strategic Recommendations
-5. Next Steps for ${data.startup.stage} stage
-6. Risk Assessment
-7. Growth Potential Analysis
-
-Format as JSON with keys: executiveSummary, strengths, weaknesses, opportunities, threats, recommendations, nextSteps, riskScore, growthPotential, marketPosition, competitiveAdvantage, financialHealth, teamReadiness`;
-        }
-
-        async function callOpenAI(prompt) {
-            // This is a placeholder - you would need to implement with your API key
-            const API_KEY = 'your-openai-api-key'; // Replace with actual key
-            
-            try {
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: "gpt-4",
-                        messages: [
-                            {
-                                role: "system",
-                                content: "You are an expert startup analyst. Provide detailed, actionable insights based on startup data. Return responses in valid JSON format."
-                            },
-                            {
-                                role: "user",
-                                content: prompt
-                            }
-                        ],
-                        temperature: 0.7,
-                        max_tokens: 2000
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`API call failed: ${response.status}`);
-                }
-
-                const result = await response.json();
-                const aiResponse = result.choices[0].message.content;
-                
-                // Parse AI response
-                try {
-                    const parsedReport = JSON.parse(aiResponse);
-                    return { success: true, report: parsedReport };
-                } catch (parseError) {
-                    console.error('Failed to parse AI response:', parseError);
-                    return { success: false, error: 'Invalid AI response format' };
-                }
-            } catch (error) {
-                console.error('OpenAI API error:', error);
-                return { success: false, error: error.message };
-            }
-        }
-
-        // Alternative: Claude API integration
-        async function callClaude(prompt) {
-            const API_KEY = 'your-claude-api-key'; // Replace with actual key
-            
-            try {
-                const response = await fetch('https://api.anthropic.com/v1/messages', {
-                    method: 'POST',
-                    headers: {
-                        'x-api-key': API_KEY,
-                        'Content-Type': 'application/json',
-                        'anthropic-version': '2023-06-01'
-                    },
-                    body: JSON.stringify({
-                        model: "claude-3-sonnet-20240229",
-                        messages: [
-                            {
-                                role: "user",
-                                content: prompt
-                            }
-                        ],
-                        max_tokens: 2000
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`API call failed: ${response.status}`);
-                }
-
-                const result = await response.json();
-                const aiResponse = result.content[0].text;
-                
-                try {
-                    const parsedReport = JSON.parse(aiResponse);
-                    return { success: true, report: parsedReport };
-                } catch (parseError) {
-                    console.error('Failed to parse AI response:', parseError);
-                    return { success: false, error: 'Invalid AI response format' };
-                }
-            } catch (error) {
-                console.error('Claude API error:', error);
-                return { success: false, error: error.message };
-            }
-        }
-
-        function generateComprehensiveReport(data) {
-            const { startup, metrics, business, narrative, traction, stageSpecific } = data;
-            
-            // Enhanced AI Logic for Analysis
-            const analysis = {
-                strengths: [],
-                weaknesses: [],
-                opportunities: [],
-                threats: [],
-                recommendations: [],
-                nextSteps: [],
-                riskScore: 0,
-                growthPotential: 0,
-                marketPosition: '',
-                competitiveAdvantage: '',
-                financialHealth: '',
-                teamReadiness: ''
-            };
-
-            // Industry-specific benchmarks
-            const industryBenchmarks = {
-                'SaaS': { revenuePerCustomer: 5000, churnRate: 0.05, ltv: 50000 },
-                'E-commerce': { revenuePerCustomer: 200, churnRate: 0.15, ltv: 500 },
-                'Fintech': { revenuePerCustomer: 10000, churnRate: 0.03, ltv: 100000 },
-                'Healthtech': { revenuePerCustomer: 8000, churnRate: 0.04, ltv: 80000 },
-                'Edtech': { revenuePerCustomer: 3000, churnRate: 0.08, ltv: 30000 }
-            };
-
-            // Multi-factor scoring system
-            let totalScore = 0;
-            let maxScore = 0;
-
-            // Revenue Analysis (25% weight)
-            const revenueScore = analyzeRevenue(metrics.revenue, business.industry, startup.stage);
-            totalScore += revenueScore.score;
-            maxScore += 25;
-            
-            if (revenueScore.score >= 20) {
-                analysis.strengths.push("Exceptional revenue performance for stage");
-                analysis.financialHealth = 'Strong';
-            } else if (revenueScore.score >= 15) {
-                analysis.strengths.push("Good revenue traction indicating market demand");
-                analysis.financialHealth = 'Good';
-            } else {
-                analysis.weaknesses.push(revenueScore.insight);
-                analysis.recommendations.push(revenueScore.recommendation);
-                analysis.financialHealth = 'Needs Attention';
-            }
-
-            // Customer Analysis (20% weight)
-            const customerScore = analyzeCustomers(metrics.customers, business.industry, startup.stage);
-            totalScore += customerScore.score;
-            maxScore += 20;
-            
-            if (customerScore.score >= 16) {
-                analysis.strengths.push("Strong customer acquisition and retention");
-            } else {
-                analysis.weaknesses.push(customerScore.insight);
-                analysis.recommendations.push(customerScore.recommendation);
-            }
-
-            // Funding Analysis (15% weight)
-            const fundingScore = analyzeFunding(metrics.funding, startup.stage, metrics.runway);
-            totalScore += fundingScore.score;
-            maxScore += 15;
-            
-            if (fundingScore.score >= 12) {
-                analysis.strengths.push("Strong capital position for growth");
-            } else {
-                analysis.weaknesses.push(fundingScore.insight);
-                analysis.recommendations.push(fundingScore.recommendation);
-            }
-
-            // Team Analysis (15% weight)
-            const teamScore = analyzeTeam(metrics.teamSize, startup.stage, business.industry);
-            totalScore += teamScore.score;
-            maxScore += 15;
-            
-            if (teamScore.score >= 12) {
-                analysis.strengths.push("Well-sized team for current stage");
-                analysis.teamReadiness = 'Strong';
-            } else {
-                analysis.weaknesses.push(teamScore.insight);
-                analysis.recommendations.push(teamScore.recommendation);
-                analysis.teamReadiness = 'Needs Growth';
-            }
-
-            // Runway Analysis (15% weight)
-            const runwayScore = analyzeRunway(metrics.runway, startup.stage, metrics.revenue);
-            totalScore += runwayScore.score;
-            maxScore += 15;
-            
-            if (runwayScore.score < 10) {
-                analysis.threats.push("Critical runway situation requiring immediate attention");
-                analysis.riskScore += 30;
-            }
-
-            // Market Position Analysis (10% weight)
-            const marketScore = analyzeMarketPosition(business, narrative, traction);
-            totalScore += marketScore.score;
-            maxScore += 10;
-            
-            analysis.marketPosition = marketScore.position;
-            analysis.competitiveAdvantage = marketScore.advantage;
-
-            // Calculate overall scores
-            analysis.growthPotential = Math.round((totalScore / maxScore) * 100);
-            analysis.riskScore = Math.min(100, analysis.riskScore + (100 - analysis.growthPotential));
-
-            // Generate opportunities and threats
-            generateOpportunitiesAndThreats(analysis, business, metrics, startup.stage);
-
-            // Stage-specific strategic guidance
-            generateStageSpecificGuidance(analysis, startup.stage, metrics, business);
-
-            // Generate executive summary
-            const executiveSummary = generateExecutiveSummary(startup, analysis, business);
-
-            return {
-                executiveSummary: executiveSummary,
-                analysis: analysis,
-                metrics: metrics,
-                stage: startup.stage,
-                score: startup.score,
-                benchmarks: industryBenchmarks[business.industry] || industryBenchmarks['SaaS']
-            };
-        }
-
-        // Enhanced Analysis Functions
-        function analyzeRevenue(revenue, industry, stage) {
-            const benchmarks = {
-                'Ideation': { min: 0, good: 10000, excellent: 50000 },
-                'Validation': { min: 5000, good: 25000, excellent: 100000 },
-                'Early Traction': { min: 25000, good: 100000, excellent: 500000 },
-                'Growth': { min: 100000, good: 500000, excellent: 2000000 },
-                'Scale': { min: 500000, good: 2000000, excellent: 10000000 }
-            };
-
-            const benchmark = benchmarks[stage] || benchmarks['Ideation'];
-            
-            if (revenue >= benchmark.excellent) {
-                return { score: 25, insight: "Exceptional revenue for stage", recommendation: "Focus on scaling successful channels" };
-            } else if (revenue >= benchmark.good) {
-                return { score: 20, insight: "Good revenue traction", recommendation: "Optimise pricing and expand customer base" };
-            } else if (revenue >= benchmark.min) {
-                return { score: 15, insight: "Basic revenue generation", recommendation: "Implement pilot programmes and validate pricing" };
-            } else {
-                return { score: 10, insight: "Limited revenue - need monetisation strategy", recommendation: "Focus on product-market fit and early adopters" };
-            }
-        }
-
-        function analyzeCustomers(customers, industry, stage) {
-            const benchmarks = {
-                'Ideation': { min: 0, good: 10, excellent: 50 },
-                'Validation': { min: 5, good: 25, excellent: 100 },
-                'Early Traction': { min: 20, good: 100, excellent: 500 },
-                'Growth': { min: 100, good: 500, excellent: 2000 },
-                'Scale': { min: 500, good: 2000, excellent: 10000 }
-            };
-
-            const benchmark = benchmarks[stage] || benchmarks['Ideation'];
-            
-            if (customers >= benchmark.excellent) {
-                return { score: 20, insight: "Strong customer base", recommendation: "Focus on retention and expansion" };
-            } else if (customers >= benchmark.good) {
-                return { score: 16, insight: "Good customer traction", recommendation: "Scale acquisition channels" };
-            } else if (customers >= benchmark.min) {
-                return { score: 12, insight: "Basic customer base", recommendation: "Accelerate customer acquisition" };
-            } else {
-                return { score: 8, insight: "Small customer base", recommendation: "Focus on customer discovery and validation" };
-            }
-        }
-
-        function analyzeFunding(funding, stage, runway) {
-            const benchmarks = {
-                'Ideation': { min: 0, good: 50000, excellent: 250000 },
-                'Validation': { min: 25000, good: 250000, excellent: 1000000 },
-                'Early Traction': { min: 100000, good: 1000000, excellent: 5000000 },
-                'Growth': { min: 500000, good: 5000000, excellent: 20000000 },
-                'Scale': { min: 2000000, good: 20000000, excellent: 100000000 }
-            };
-
-            const benchmark = benchmarks[stage] || benchmarks['Ideation'];
-            
-            if (funding >= benchmark.excellent) {
-                return { score: 15, insight: "Strong funding position", recommendation: "Invest in growth and expansion" };
-            } else if (funding >= benchmark.good) {
-                return { score: 12, insight: "Good funding for stage", recommendation: "Consider strategic investments" };
-            } else if (funding >= benchmark.min) {
-                return { score: 9, insight: "Basic funding secured", recommendation: "Consider raising additional funding" };
-            } else {
-                return { score: 6, insight: "Limited funding may constrain growth", recommendation: "Prioritise fundraising or revenue generation" };
-            }
-        }
-
-        function analyzeTeam(teamSize, stage, industry) {
-            const benchmarks = {
-                'Ideation': { min: 1, good: 3, excellent: 5 },
-                'Validation': { min: 2, good: 5, excellent: 10 },
-                'Early Traction': { min: 3, good: 8, excellent: 15 },
-                'Growth': { min: 5, good: 15, excellent: 30 },
-                'Scale': { min: 10, good: 30, excellent: 100 }
-            };
-
-            const benchmark = benchmarks[stage] || benchmarks['Ideation'];
-            
-            if (teamSize >= benchmark.excellent) {
-                return { score: 15, insight: "Well-staffed for stage", recommendation: "Focus on team culture and efficiency" };
-            } else if (teamSize >= benchmark.good) {
-                return { score: 12, insight: "Good team size for stage", recommendation: "Consider strategic hires" };
-            } else if (teamSize >= benchmark.min) {
-                return { score: 9, insight: "Lean team structure", recommendation: "Build out key roles" };
-            } else {
-                return { score: 6, insight: "Understaffed for growth", recommendation: "Prioritise key hires" };
-            }
-        }
-
-        function analyzeRunway(runway, stage, revenue) {
-            const benchmarks = {
-                'Ideation': { min: 3, good: 6, excellent: 12 },
-                'Validation': { min: 6, good: 12, excellent: 18 },
-                'Early Traction': { min: 6, good: 12, excellent: 18 },
-                'Growth': { min: 12, good: 18, excellent: 24 },
-                'Scale': { min: 18, good: 24, excellent: 36 }
-            };
-
-            const benchmark = benchmarks[stage] || benchmarks['Ideation'];
-            
-            if (runway >= benchmark.excellent) {
-                return { score: 15, insight: "Excellent runway for growth", recommendation: "Invest in long-term initiatives" };
-            } else if (runway >= benchmark.good) {
-                return { score: 12, insight: "Good runway position", recommendation: "Monitor burn rate closely" };
-            } else if (runway >= benchmark.min) {
-                return { score: 9, insight: "Adequate runway", recommendation: "Focus on revenue or funding" };
-            } else {
-                return { score: 6, insight: "Critical runway situation", recommendation: "Immediate action required - extend runway" };
-            }
-        }
-
-        function analyzeMarketPosition(business, narrative, traction) {
-            let score = 10;
-            let position = 'Emerging';
-            let advantage = 'Innovation';
-
-            // Analyze business model strength
-            if (business.model.includes('B2B')) {
-                score += 2;
-                advantage = 'B2B Relationships';
-            }
-            if (business.model.includes('SaaS')) {
-                score += 3;
-                advantage = 'Recurring Revenue Model';
-            }
-
-            // Analyze market maturity
-            if (business.region.includes('Tier1')) {
-                score += 2;
-                position = 'Established Market';
-            }
-
-            // Analyze narrative quality
-            if (narrative.opportunity.length > 150) score += 1;
-            if (narrative.targetCustomer.length > 100) score += 1;
-            if (traction.signals.length > 2) score += 1;
-
-            return { score: Math.min(10, score), position, advantage };
-        }
-
-        function generateOpportunitiesAndThreats(analysis, business, metrics, stage) {
-            // Opportunities
-            if (business.model.includes('B2B')) {
-                analysis.opportunities.push("High-value B2B contracts potential");
-            }
-            if (business.region.includes('Emerging')) {
-                analysis.opportunities.push("First-mover advantage in emerging market");
-            }
-            if (metrics.revenue > 100000) {
-                analysis.opportunities.push("Strong foundation for scaling operations");
-            }
-
-            // Threats
-            if (metrics.runway < 6) {
-                analysis.threats.push("Cash flow risk requiring immediate attention");
-            }
-            if (business.industry === 'Fintech' && metrics.funding < 500000) {
-                analysis.threats.push("Regulatory compliance costs may strain resources");
-            }
-            if (stage === 'Scale' && metrics.teamSize < 20) {
-                analysis.threats.push("Team capacity may limit scaling potential");
-            }
-        }
-
-        function generateStageSpecificGuidance(analysis, stage, metrics, business) {
-            const guidance = {
-                'Ideation': [
-                    "Conduct 50+ customer interviews to validate problem",
-                    "Build MVP with core features only",
-                    "Define clear value proposition",
-                    "Test multiple customer segments"
-                ],
-                'Validation': [
-                    "Scale customer acquisition channels",
-                    "Optimise conversion funnel",
-                    "Implement pricing strategy",
-                    "Build repeatable sales process"
-                ],
-                'Early Traction': [
-                    "Expand to new customer segments",
-                    "Optimise unit economics",
-                    "Build scalable operations",
-                    "Develop strategic partnerships"
-                ],
-                'Growth': [
-                    "Enter new markets/geographies",
-                    "Develop additional product lines",
-                    "Build strong team culture",
-                    "Optimise for efficiency"
-                ],
-                'Scale': [
-                    "Focus on profitability",
-                    "Consider strategic partnerships",
-                    "Prepare for potential exit",
-                    "Optimise organisational structure"
-                ]
-            };
-
-            analysis.nextSteps = guidance[stage] || guidance['Ideation'];
-        }
-
-        function generateExecutiveSummary(startup, analysis, business) {
-            const health = analysis.financialHealth === 'Strong' ? 'excellent' : 
-                          analysis.financialHealth === 'Good' ? 'good' : 'needs attention';
-            
-            const potential = analysis.growthPotential >= 80 ? 'high' :
-                            analysis.growthPotential >= 60 ? 'moderate' : 'limited';
-
-            return `
-                ${startup.name} is a ${business.industry} company operating in the ${business.region} market. 
-                Currently in the ${startup.stage} stage with a ${startup.score}/10 overall score, 
-                the company shows ${potential} growth potential with ${health} financial health. 
-                Key competitive advantages include ${analysis.competitiveAdvantage.toLowerCase()}, 
-                positioning the company as ${analysis.marketPosition.toLowerCase()} in their market. 
-                Critical focus areas include ${analysis.recommendations.slice(0, 3).join(', ')}.
-            `.trim();
-        }
-
-        function displayAIReport(report) {
-            const results = document.getElementById('results');
-            const existingContent = results.innerHTML.replace(/<div class="success-message">[\s\S]*?<\/div>/, '');
-            
-            results.innerHTML = existingContent + `
-                <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 20px; margin: 20px 0; border-radius: 8px;">
-                    <h3>🤖 AI-Generated Startup Analysis Report</h3>
-                    
-                    <div style="background: white; padding: 15px; border-radius: 5px; margin: 15px 0;">
-                        <h4>📋 Executive Summary</h4>
-                        <p>${report.executiveSummary}</p>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0;">
-                        <div style="background: #D1FAE5; padding: 15px; border-radius: 5px;">
-                            <h4>📊 Key Metrics</h4>
-                            <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-                                <span>Growth Potential:</span>
-                                <span style="font-weight: bold; color: ${report.analysis.growthPotential >= 80 ? '#059669' : report.analysis.growthPotential >= 60 ? '#F59E0B' : '#DC2626'}">${report.analysis.growthPotential}%</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-                                <span>Risk Score:</span>
-                                <span style="font-weight: bold; color: ${report.analysis.riskScore <= 20 ? '#059669' : report.analysis.riskScore <= 40 ? '#F59E0B' : '#DC2626'}">${report.analysis.riskScore}%</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-                                <span>Financial Health:</span>
-                                <span style="font-weight: bold; color: ${report.analysis.financialHealth === 'Strong' ? '#059669' : report.analysis.financialHealth === 'Good' ? '#F59E0B' : '#DC2626'}">${report.analysis.financialHealth}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-                                <span>Team Readiness:</span>
-                                <span style="font-weight: bold; color: ${report.analysis.teamReadiness === 'Strong' ? '#059669' : '#F59E0B'}">${report.analysis.teamReadiness}</span>
-                            </div>
-                        </div>
-                        
-                        <div style="background: #FEE2E2; padding: 15px; border-radius: 5px;">
-                            <h4>🎯 Market Position</h4>
-                            <p><strong>Position:</strong> ${report.analysis.marketPosition}</p>
-                            <p><strong>Competitive Advantage:</strong> ${report.analysis.competitiveAdvantage}</p>
-                            <p><strong>Industry:</strong> ${report.business?.industry || 'Unknown'}</p>
-                            <p><strong>Stage:</strong> ${report.stage}</p>
-                        </div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0;">
-                        <div style="background: #D1FAE5; padding: 15px; border-radius: 5px;">
-                            <h4>✅ Strengths (${report.analysis.strengths.length})</h4>
-                            <ul>
-                                ${report.analysis.strengths.map(s => `<li>${s}</li>`).join('')}
-                            </ul>
-                        </div>
-                        
-                        <div style="background: #FEE2E2; padding: 15px; border-radius: 5px;">
-                            <h4>⚠️ Areas for Improvement (${report.analysis.weaknesses.length})</h4>
-                            <ul>
-                                ${report.analysis.weaknesses.map(w => `<li>${w}</li>`).join('')}
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0;">
-                        <div style="background: #DBEAFE; padding: 15px; border-radius: 5px;">
-                            <h4>🚀 Opportunities (${report.analysis.opportunities.length})</h4>
-                            <ul>
-                                ${report.analysis.opportunities.map(o => `<li>${o}</li>`).join('')}
-                            </ul>
-                        </div>
-                        
-                        <div style="background: #FEF3C7; padding: 15px; border-radius: 5px;">
-                            <h4>⚠️ Threats (${report.analysis.threats.length})</h4>
-                            <ul>
-                                ${report.analysis.threats.map(t => `<li>${t}</li>`).join('')}
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div style="background: #F3F4F6; padding: 15px; border-radius: 5px; margin: 15px 0;">
-                        <h4>💡 Strategic Recommendations</h4>
-                        <ol>
-                            ${report.analysis.recommendations.map(r => `<li>${r}</li>`).join('')}
-                        </ol>
-                    </div>
-                    
-                    <div style="background: #E0E7FF; padding: 15px; border-radius: 5px; margin: 15px 0;">
-                        <h4>🎯 Next Steps for ${report.stage} Stage</h4>
-                        <ol>
-                            ${report.analysis.nextSteps.map(s => `<li>${s}</li>`).join('')}
-                        </ol>
-                    </div>
-                    
-                    <div style="margin-top: 20px;">
-                        <button onclick="downloadAIReport()" style="background: #0D9488; margin-right: 10px;">📄 Download Report</button>
-                        <button onclick="shareAIReport()" style="background: #F59E0B; margin-right: 10px;">📤 Share Report</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function downloadAIReport() {
-            // Implementation for downloading the AI report as PDF
-            alert('AI Report download feature would be implemented here');
-        }
-
-        function shareAIReport() {
-            // Implementation for sharing the AI report
-            alert('AI Report sharing feature would be implemented here');
         }
 
         function restartForm() {
