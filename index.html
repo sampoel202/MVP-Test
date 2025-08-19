@@ -8,43 +8,44 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #F0FDF4; color: #1F2937; margin: 0; }
+        body { font-family: Arial, sans-serif; background: #F0FDF4; colour: #1F2937; margin: 0; }
         .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.08); padding: 32px 24px; }
+        @media (max-width: 768px) { .container { margin: 20px 10px; padding: 20px 15px; max-width: calc(100% - 20px); } }
         .progress-bar { width: 100%; background: #eee; border-radius: 5px; height: 10px; margin-bottom: 24px; }
         .progress { height: 10px; background: linear-gradient(90deg, #0D9488, #F59E0B); border-radius: 5px; transition: width 0.3s; }
         .step { display: none; }
         .step.active { display: block; }
         .form-group { margin-bottom: 24px; }
         label { font-weight: 500; display: block; margin-bottom: 8px; }
-        label.required::after { content: " *"; color: #DC2626; }
-        input, select, textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem; background-color: #F3F4F6; }
+        label.required::after { content: " *"; colour: #DC2626; }
+        input, select, textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem; background-colour: #F3F4F6; }
         .button-row { display: flex; justify-content: space-between; margin-top: 24px; }
-        button { padding: 10px 24px; border: none; border-radius: 5px; background-color: #0D9488; color: #fff; font-size: 1rem; cursor: pointer; }
-        button:hover { background-color: #0F766E; }
+        button { padding: 10px 24px; border: none; border-radius: 5px; background-colour: #0D9488; colour: #fff; font-size: 1rem; cursor: pointer; }
+        button:hover { background-colour: #0F766E; }
         button[disabled] { background: #ccc; cursor: not-allowed; }
         .results { background: #f8f9fa; border-radius: 8px; padding: 24px; margin-top: 32px; }
-        .results h2 { color: #0D9488; }
+        .results h2 { colour: #0D9488; }
         .hidden { display: none; }
-        .success-message { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin: 10px 0; }
-        .error-message { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 10px 0; }
-        .consent-screen { text-align: center; padding: 40px 20px; max-width: 800px; margin: 0 auto; }
-        .consent-screen h2 { color: #0D9488; margin-bottom: 20px; }
+        .success-message { background: #d4edda; colour: #155724; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .error-message { background: #f8d7da; colour: #721c24; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .consent-screen { text-align: centre; padding: 40px 20px; max-width: 800px; margin: 0 auto; }
+        .consent-screen h2 { colour: #0D9488; margin-bottom: 20px; }
         .consent-screen p { margin-bottom: 30px; line-height: 1.6; }
         .consent-details { text-align: left; background: #f8f9fa; border-radius: 8px; padding: 24px; margin: 30px 0; border: 1px solid #e9ecef; }
-        .consent-details h3 { color: #374151; margin: 20px 0 10px 0; font-size: 1.1rem; }
+        .consent-details h3 { colour: #374151; margin: 20px 0 10px 0; font-size: 1.1rem; }
         .consent-details h3:first-child { margin-top: 0; }
         .consent-details ul { margin: 15px 0; padding-left: 20px; }
         .consent-details li { margin: 8px 0; line-height: 1.5; }
-        .consent-details strong { color: #0D9488; }
-        .consent-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 30px; }
-        .consent-buttons button:first-child { background-color: #0D9488; }
-        .consent-buttons button:last-child { background-color: #6B7280; }
-        .metric-score { display: flex; align-items: center; margin: 10px 0; }
+        .consent-details strong { colour: #0D9488; }
+        .consent-buttons { display: flex; gap: 15px; justify-content: centre; margin-top: 30px; }
+        .consent-buttons button:first-child { background-colour: #0D9488; }
+        .consent-buttons button:last-child { background-colour: #6B7280; }
+        .metric-score { display: flex; align-items: centre; margin: 10px 0; }
         .metric-score .label { flex: 1; }
         .metric-score .score { width: 100px; text-align: right; font-weight: bold; }
-        .score-red { color: #DC2626; }
-        .score-amber { color: #F59E0B; }
-        .score-green { color: #059669; }
+        .score-red { colour: #DC2626; }
+        .score-amber { colour: #F59E0B; }
+        .score-green { colour: #059669; }
         .recommendations { background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 15px; margin: 20px 0; }
         .other-input { margin-top: 10px; }
     </style>
@@ -60,12 +61,14 @@
                 <ul>
                     <li><strong>26 questions</strong> about your business model, traction, and current challenges</li>
                     <li><strong>Stage assessment</strong> to determine where your startup fits in the growth journey</li>
-                    <li><strong>Follow-up questions</strong> tailored to your startup's stage</li>
-                    <li><strong>Personalised recommendations</strong> based on your specific situation</li>
+                    <li><strong>8-13 further dynamic questions</strong> depending on your stage</li>
+                    <li><strong>Personalised recommendations</strong> based on your startup's stage of development</li>
                 </ul>
                 
                 <h3>Data usage:</h3>
-                <p>Your responses help us improve our support programmes and provide better guidance to other startups. We may use anonymised data for internal analysis and programme development.</p>
+                <p>Your responses are used solely to generate your personalised diagnostic report. We do not store personal information or share your data with third parties. This tool complies with GDPR requirements for data processing.</p>
+                <p>By proceeding, you agree to our <a href="#" style="colour: #10b981; text-decoration: none;">Terms and Conditions</a> and <a href="#" style="colour: #10b981; text-decoration: none;">Privacy Policy</a>.</p>
+                <p><a href="#" style="colour: #10b981; text-decoration: none;">Learn more about our startup framework and stages</a></p>
             </div>
             
             <div class="consent-buttons">
@@ -187,11 +190,11 @@
                     "We've scoped our MVP tightly with a clear reason for each feature."
                 ]},
                 { label: "How well-defined is your business model at this stage?", name: "ideation_business_model", type: "select", options: [
-                    "We have a clear business model – we know what we're selling, who pays, how they pay, and how it scales.",
-                    "We have an initial business model and revenue logic, but still need to validate key assumptions.",
-                    "We're still exploring different business model options or customer segments.",
+                    "We haven't focused on the business model yet.",
                     "We have a broad idea, but haven't defined what we're selling or how it generates revenue.",
-                    "We haven't focused on the business model yet."
+                    "We're still exploring different business model options or customer segments.",
+                    "We have an initial business model and revenue logic, but still need to validate key assumptions.",
+                    "We have a clear business model – we know what we're selling, who pays, how they pay, and how it scales."
                 ]},
                 { label: "How would you describe your current thinking around how to reach your early users or customers?", name: "ideation_gtm_thinking", type: "select", options: [
                     "We haven't thought much about GTM yet.",
@@ -215,11 +218,11 @@
                     "Deep experience scaling early-stage GTM strategies."
                 ]},
                 { label: "How clearly have you defined your fundraising goals and demonstrated why you're ready to raise?", name: "ideation_fundraising_readiness", type: "select", options: [
+                    "Funding is not a priority for our business model at this stage.",
                     "No clear funding need, unclear investor type or use of funds.",
                     "Vague understanding of funding need, minimal clarity on use of funds.",
                     "Funding target loosely defined, early sense of investor type and use.",
-                    "Clear fundraising goal with identified investor type and planned use.",
-                    "Defined raise, investor fit, MVP scope, and early need validation."
+                    "Clear fundraising goal with identified investor type and planned use."
                 ]},
                 { label: "How clearly have you mapped out your near-term goals, milestones, and ways to track progress?", name: "ideation_milestones_progress", type: "select", options: [
                     "No milestones or future planning yet.",
@@ -1183,6 +1186,83 @@
             document.getElementById('startupForm').style.display = 'none';
             document.getElementById('results').style.display = 'none';
             
+            // Show stage explanation first
+            const results = document.getElementById('results');
+            results.style.display = 'block';
+            
+            const stageDescriptions = {
+                'Ideation': 'You are in the Ideation stage - the early conceptual phase where you\'re developing your business idea, validating the problem, and building your initial team.',
+                'Ideation → Validation': 'You are in the Ideation stage - the early conceptual phase where you\'re developing your business idea, validating the problem, and building your initial team.',
+                'Validation': 'You are in the Validation stage - the problem-solution validation phase where you\'re testing your MVP with real users and validating market demand.',
+                'Validation → Early Traction': 'You are in the Validation stage - the problem-solution validation phase where you\'re testing your MVP with real users and validating market demand.',
+                'Early Traction': 'You are in the Early Traction stage - the early customer acquisition phase where you\'re building your first customers and establishing product-market fit.',
+                'Early Traction → Growth': 'You are in the Early Traction stage - the early customer acquisition phase where you\'re building your first customers and establishing product-market fit.',
+                'Growth': 'You are in the Growth stage - the scaling phase where you\'re expanding your customer base and building systems to support rapid growth.',
+                'Growth → Scale': 'You are in the Growth stage - the scaling phase where you\'re expanding your customer base and building systems to support rapid growth.',
+                'Scale': 'You are in the Scale stage - the mature scaling phase where you\'re expanding internationally and building enterprise-grade operations.'
+            };
+            
+            const currentStage = stageResult.stage;
+            const stageDescription = stageDescriptions[currentStage] || 'You are in the early stages of your startup journey.';
+            
+            // Map transition stages to base stages and get the correct number of questions
+            const stageMapping = {
+                'Ideation': 'Ideation',
+                'Ideation → Validation': 'Ideation',
+                'Validation': 'Validation',
+                'Validation → Early Traction': 'Validation',
+                'Early Traction': 'Early Traction',
+                'Early Traction → Growth': 'Early Traction',
+                'Growth': 'Growth',
+                'Growth → Scale': 'Growth',
+                'Scale': 'Scale'
+            };
+            
+            const baseStage = stageMapping[currentStage] || 'Ideation';
+            const stageQuestionsList = stageQuestions[baseStage];
+            const questionCount = stageQuestionsList ? stageQuestionsList.length : 0;
+            
+            // Set the total stage steps for later use
+            totalStageSteps = questionCount;
+            
+            let nextStepMessage = '';
+            if (currentStage === 'Scale') {
+                nextStepMessage = 'As you\'re in the Scale stage, you\'ve already demonstrated strong market position and operational maturity. The next phase focuses on strategic expansion and optimization.';
+            } else if (questionCount > 0) {
+                nextStepMessage = `Now let's dive deeper with ${questionCount} stage-specific questions to help us understand how you're positioning yourself and how we can provide targeted support and guidance.`;
+            } else {
+                nextStepMessage = 'Let\'s explore your current challenges and opportunities to provide targeted recommendations.';
+            }
+            
+            results.innerHTML = `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="color: #0D9488; font-size: 32px; margin-bottom: 10px;">🎯 STAGE ASSESSMENT COMPLETE</h2>
+                    <p style="color: #6B7280; font-size: 18px;">Based on your answers to the 26 core questions</p>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #1f2937, #374151); padding: 30px; border-radius: 16px; text-align: center; color: white; margin-bottom: 30px;">
+                    <h2 style="margin: 0 0 15px 0; font-size: 28px; color: #fbbf24;">STAGE: ${currentStage.toUpperCase()}</h2>
+                    <div style="font-size: 48px; font-weight: bold; color: #10b981; margin-bottom: 10px;">${stageResult.score}/10</div>
+                    <p style="margin: 0; color: #d1d5db; font-size: 16px;">Overall Performance Score</p>
+                </div>
+                
+                <div style="background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                    <h3 style="color: #374151; margin-bottom: 20px; text-align: center;">What This Stage Means</h3>
+                    <p style="color: #6b7280; line-height: 1.6; text-align: center; font-size: 16px;">${stageDescription}</p>
+                    <p style="color: #6b7280; line-height: 1.6; text-align: center; font-size: 16px; margin-top: 20px;">${nextStepMessage}</p>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button onclick="proceedToStageQuestions()" style="padding: 12px 24px; border: none; border-radius: 8px; background: #0D9488; color: white; cursor: pointer; font-size: 16px;">Continue to Stage Questions</button>
+                </div>
+            `;
+        }
+        
+        function proceedToStageQuestions() {
+            // Hide results and show form
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('startupForm').style.display = 'block';
+            
             // Update title
             document.querySelector('h1').textContent = 'Startup Diagnostic - Stage-Specific Questions';
             
@@ -1301,12 +1381,325 @@
             const form = document.getElementById('startupForm');
             form.style.display = 'none';
             
-            // Use the contextual scores from stageResult
-            const detailedScores = stageResult.detailedScores || {};
-            const thresholds = stageResult.thresholds;
-            const businessContext = stageResult.businessContext;
+            // Generate the new stage-specific dashboard
+            const dashboardHTML = generateStageSpecificDashboard();
             
-            // Get scores from detailed analysis
+            const results = document.getElementById('results');
+            results.style.display = 'block';
+            results.innerHTML = dashboardHTML;
+        }
+
+        function generateStageSpecificDashboard() {
+            // Map transition stages to base stages
+            const stageMapping = {
+                'Ideation': 'Ideation',
+                'Ideation → Validation': 'Ideation',
+                'Validation': 'Validation',
+                'Validation → Early Traction': 'Validation',
+                'Early Traction': 'Early Traction',
+                'Early Traction → Growth': 'Early Traction',
+                'Growth': 'Growth',
+                'Growth → Scale': 'Growth',
+                'Scale': 'Scale'
+            };
+            
+            // Debug logging for stage mapping
+            console.log('Original stage:', stageResult.stage);
+            console.log('Mapped stage:', stageMapping[stageResult.stage]);
+            console.log('Available stages:', Object.keys(stageQuestions));
+            
+            const currentStage = stageMapping[stageResult.stage] || 'Ideation';
+            const stageQuestionsList = stageQuestions[currentStage];
+            
+            if (!stageQuestionsList) {
+                return generateFallbackDashboard();
+            }
+            
+            // Calculate scores for each stage-specific question
+            const questionScores = [];
+            let totalScore = 0;
+            let totalQuestions = 0;
+            
+            stageQuestionsList.forEach(question => {
+                const answer = stageSpecificAnswers[question.name];
+                if (answer && question.options) {
+                    const optionIndex = question.options.findIndex(option => option === answer);
+                    if (optionIndex !== -1) {
+                        const score = optionIndex + 1; // Convert to 1-5 scale
+                        const percentage = (score / 5) * 100;
+                        const color = score >= 4 ? '#10b981' : score >= 3 ? '#f59e0b' : '#ef4444';
+                        const zone = score >= 4 ? 'Green Zone' : score >= 3 ? 'Amber Zone' : 'Red Zone';
+                        
+                        questionScores.push({
+                            label: question.label,
+                            score: score,
+                            percentage: percentage,
+                            color: color,
+                            zone: zone,
+                            answer: answer
+                        });
+                        
+                        totalScore += score;
+                        totalQuestions++;
+                    }
+                }
+            });
+            
+            // Calculate overall stage score
+            const overallScore = totalQuestions > 0 ? (totalScore / totalQuestions / 5) * 10 : 0;
+            
+            // Debug logging
+            console.log(`Stage: ${currentStage}, Questions: ${totalQuestions}, Total Score: ${totalScore}, Overall: ${overallScore}`);
+            
+            // Generate dashboard grid
+            const dashboardGrid = generateDashboardGrid(questionScores);
+            
+            return `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="color: #0D9488; font-size: 32px; margin-bottom: 10px;">🚀 STAGE-SPECIFIC PERFORMANCE DASHBOARD</h2>
+                    <p style="color: #6B7280; font-size: 18px;">Your performance across ${currentStage} stage key areas</p>
+                </div>
+                
+                <!-- Dynamic Dashboard Grid -->
+                ${dashboardGrid}
+                
+                <!-- Stage and Score Summary -->
+                <div style="background: linear-gradient(135deg, #1f2937, #374151); padding: 30px; border-radius: 16px; text-align: center; color: white; margin-bottom: 30px;">
+                    <h2 style="margin: 0 0 15px 0; font-size: 28px; color: #fbbf24;">STAGE: ${stageResult.stage.toUpperCase()}</h2>
+                    <div style="font-size: 48px; font-weight: bold; color: #10b981; margin-bottom: 10px;">${overallScore.toFixed(1)}/10</div>
+                    <p style="margin: 0; color: #d1d5db; font-size: 16px;">${currentStage} Stage Performance Score</p>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div style="text-align: center; margin-top: 30px;">
+                    <button onclick="restartForm()" style="margin: 0 10px; padding: 12px 24px; border: none; border-radius: 8px; background: #6B7280; color: white; cursor: pointer; font-size: 16px;">Start Over</button>
+                    <button onclick="exportCompleteData()" style="margin: 0 10px; padding: 12px 24px; border: none; border-radius: 8px; background: #0D9488; color: white; cursor: pointer; font-size: 16px;">Export Data</button>
+                    <button onclick="submitToGoogleSheets()" style="margin: 0 10px; padding: 12px 24px; border: none; border-radius: 8px; background: #4285f4; color: white; cursor: pointer; font-size: 16px;">Submit to Google Sheets</button>
+                    <button onclick="generateAIReport()" style="margin: 0 10px; padding: 12px 24px; border: none; border-radius: 8px; background: #10b981; color: white; cursor: pointer; font-size: 16px;">🤖 Generate AI Report</button>
+                </div>
+            `;
+        }
+
+        function generateDashboardGrid(questionScores) {
+            if (questionScores.length === 0) {
+                return '<p style="text-align: center; colour: #6b7280;">No stage-specific questions completed.</p>';
+            }
+            
+            // Determine grid layout based on number of questions
+            let gridColumns = 3;
+            if (questionScores.length <= 6) {
+                gridColumns = 3;
+            } else if (questionScores.length <= 9) {
+                gridColumns = 3;
+            } else if (questionScores.length <= 12) {
+                gridColumns = 3; // Changed from 4 to 3 for better fit
+            } else {
+                gridColumns = 4;
+            }
+            
+            let dashboardHTML = `<div style="display: grid; grid-template-columns: repeat(${gridColumns}, 1fr); gap: 15px; margin-bottom: 30px; width: 100%; box-sizing: border-box;">`;
+            
+                            questionScores.forEach((question, index) => {
+                    const emoji = getEmojiForQuestion(question.label);
+                    dashboardHTML += `
+                        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: centre; min-height: 220px; display: flex; flex-direction: column;">
+                            <div style="font-size: 20px; margin-bottom: 15px;">${emoji}</div>
+                            <h4 style="margin: 0 0 20px 0; colour: #374151; font-size: 14px; line-height: 1.3; min-height: 40px; font-weight: 600;">${getCompactTitle(question.label)}</h4>
+                            <!-- Debug: ${question.label} -->
+                            
+                            <div style="flex-grow: 1;"></div>
+                            
+                            <div style="position: relative; width: 100px; height: 100px; margin: 0 auto;">
+                                <svg width="100" height="100" viewBox="0 0 100 100" style="transform: rotate(-90deg);">
+                                    <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                                    <circle cx="50" cy="50" r="40" fill="none" stroke="${question.color}" 
+                                            stroke-width="8" stroke-dasharray="${question.percentage/100 * 251.2} 251.2" 
+                                            stroke-linecap="round"/>
+                                </svg>
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 16px; font-weight: bold; colour: #374151;">
+                                    ${question.score}/5
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            
+            dashboardHTML += '</div>';
+            return dashboardHTML;
+        }
+
+        function getCompactTitle(questionLabel) {
+            console.log('Question label:', questionLabel);
+            const titleMap = {
+                // Ideation Stage
+                'How would you describe your current approach to customer discovery and validation?': 'Customer Discovery',
+                'How well do you understand your target market and ideal customer profile?': 'Market Understanding',
+                'How would you describe your current MVP or prototype development?': 'MVP Development',
+                'How well defined is your business model and revenue strategy?': 'Business Model',
+                'How would you describe your current go-to-market strategy?': 'Go-to-Market',
+                'How well prepared are you for raising your next round of funding?': 'Fundraising Readiness',
+                'How would you describe your current team composition and hiring strategy?': 'Team Strategy',
+                'How well are you tracking key milestones and progress?': 'Milestone Tracking',
+                
+                // Validation Stage
+                'How well have you validated that your solution addresses a real user need?': 'Solution Validation',
+                'How well do you understand which segments and channels are gaining the most traction — and how your offering compares to competitors?': 'Channel Performance',
+                'How would you describe the experiments or strategies you\'ve tested to find effective ways to reach your customers?': 'Growth Experiments',
+                'Beyond your current revenue, have you mapped out a clear financial plan for growth — including your projected revenue, funding use, and any early signs of efficiency?': 'Financial Planning',
+                'How well prepared are you for raising your next round of funding? (Consider your pitch narrative, investor profile, funding goals, and supporting materials.)': 'Funding Preparation',
+                'How would you describe your current approach to customer acquisition and retention?': 'Customer Acquisition',
+                'How well are you tracking and optimising your unit economics and customer acquisition costs?': 'Unit Economics',
+                'How would you describe your current approach to team scaling and organisational development?': 'Team Scaling',
+                'How well are you managing operational efficiency and key business processes?': 'Operational Efficiency',
+                'How would you describe your current approach to product development and feature prioritisation?': 'Product Development',
+                
+                // Early Traction Stage
+                'How well are you tracking and optimising your customer lifetime value and retention rates?': 'Customer LTV',
+                'How would you describe your current approach to market expansion and new customer segments?': 'Market Expansion',
+                'How well are you managing your cash flow and financial runway?': 'Cash Flow',
+                'How would you describe your current approach to strategic partnerships and channel development?': 'Strategic Partnerships',
+                'How well are you managing legal and compliance requirements for your business model?': 'Legal Compliance',
+                'How would you describe your current approach to customer success and support?': 'Customer Success',
+                'How clearly are you differentiating from competitors in your positioning, and how often do you adapt your messaging as the market evolves?': 'Competitive Positioning',
+                'How well is your product scaling — both in terms of features for different users and system reliability under growth?': 'Product Scalability',
+                'How would you describe your current approach to international expansion and new markets?': 'International Expansion',
+                'How well are you managing organisational culture and values as you scale?': 'Organisational Culture',
+                'How would you describe your current approach to innovation and R&D?': 'Innovation & R&D',
+                'How well are you managing risk and governance across your operations?': 'Risk Management',
+                'How would you describe your current approach to sustainability and long-term planning?': 'Sustainability',
+                
+                // Growth Stage
+                'How well are you managing customer churn and developing strategies to reduce it?': 'Churn Management',
+                'How would you describe your current approach to pricing strategy and revenue optimisation?': 'Pricing Strategy',
+                'How well are you managing your supply chain and vendor relationships?': 'Supply Chain',
+                'How would you describe your current approach to data analytics and business intelligence?': 'Data Analytics',
+                'How well are you managing your intellectual property and competitive advantages?': 'IP Management',
+                'How would you describe your current approach to corporate development and M&A opportunities?': 'Corporate Development',
+                'How well are you managing your board relationships and governance structure?': 'Board Governance',
+                'How would you describe your current approach to talent acquisition and retention?': 'Talent Strategy',
+                'How well are you managing your technology infrastructure and scalability?': 'Tech Infrastructure',
+                'How would you describe your current approach to customer experience and journey mapping?': 'Customer Experience',
+                'How well are you managing your brand positioning and marketing strategy?': 'Brand Strategy',
+                'How would you describe your current approach to sales process optimisation?': 'Sales Optimisation',
+                
+                // Scale Stage
+                'How well are you managing your global operations and international compliance?': 'Global Operations',
+                'How would you describe your current approach to corporate social responsibility?': 'CSR Strategy',
+                'How well are you managing your public relations and media strategy?': 'PR Strategy',
+                'How would you describe your current approach to investor relations and communications?': 'Investor Relations',
+                'How well are you managing your regulatory compliance and industry standards?': 'Regulatory Compliance',
+                'How would you describe your current approach to strategic planning and execution?': 'Strategic Planning',
+                'How well are you managing your organisational structure and reporting lines?': 'Organisational Structure',
+                'How would you describe your current approach to performance management and KPIs?': 'Performance Management',
+                'How well are you managing your change management and transformation initiatives?': 'Change Management',
+                'How would you describe your current approach to stakeholder management?': 'Stakeholder Management',
+                'How well are you managing your crisis management and business continuity?': 'Crisis Management',
+                'How would you describe your current approach to succession planning and leadership development?': 'Succession Planning'
+            };
+            
+            // Try exact match first
+            if (titleMap[questionLabel]) {
+                return titleMap[questionLabel];
+            }
+            
+            // Try partial matching for common patterns
+            const lowerLabel = questionLabel.toLowerCase();
+            
+            if (lowerLabel.includes('customer discovery') || lowerLabel.includes('validation')) return 'Customer Discovery';
+            if (lowerLabel.includes('target market') || lowerLabel.includes('ideal customer')) return 'Market Understanding';
+            if (lowerLabel.includes('mvp') || lowerLabel.includes('prototype')) return 'MVP Development';
+            if (lowerLabel.includes('business model') || lowerLabel.includes('revenue strategy')) return 'Business Model';
+            if (lowerLabel.includes('go-to-market') || lowerLabel.includes('gtm')) return 'Go-to-Market';
+            if (lowerLabel.includes('funding') || lowerLabel.includes('raising')) return 'Fundraising Readiness';
+            if (lowerLabel.includes('team composition') || lowerLabel.includes('hiring')) return 'Team Strategy';
+            if (lowerLabel.includes('milestones') || lowerLabel.includes('progress')) return 'Milestone Tracking';
+            if (lowerLabel.includes('solution addresses') || lowerLabel.includes('user need')) return 'Solution Validation';
+            if (lowerLabel.includes('segments') || lowerLabel.includes('channels') || lowerLabel.includes('traction')) return 'Channel Performance';
+            if (lowerLabel.includes('experiments') || lowerLabel.includes('strategies tested')) return 'Growth Experiments';
+            if (lowerLabel.includes('financial plan') || lowerLabel.includes('projected revenue')) return 'Financial Planning';
+            if (lowerLabel.includes('customer acquisition') || lowerLabel.includes('retention')) return 'Customer Acquisition';
+            if (lowerLabel.includes('unit economics') || lowerLabel.includes('acquisition costs')) return 'Unit Economics';
+            if (lowerLabel.includes('team scaling') || lowerLabel.includes('organisational')) return 'Team Scaling';
+            if (lowerLabel.includes('operational efficiency') || lowerLabel.includes('business processes')) return 'Operational Efficiency';
+            if (lowerLabel.includes('product development') || lowerLabel.includes('feature prioritisation')) return 'Product Development';
+            if (lowerLabel.includes('customer lifetime value') || lowerLabel.includes('retention rates')) return 'Customer LTV';
+            if (lowerLabel.includes('market expansion') || lowerLabel.includes('new customer segments')) return 'Market Expansion';
+            if (lowerLabel.includes('cash flow') || lowerLabel.includes('financial runway')) return 'Cash Flow';
+            if (lowerLabel.includes('strategic partnerships') || lowerLabel.includes('channel development')) return 'Strategic Partnerships';
+            if (lowerLabel.includes('legal') || lowerLabel.includes('compliance')) return 'Legal Compliance';
+            if (lowerLabel.includes('customer success') || lowerLabel.includes('support')) return 'Customer Success';
+            if (lowerLabel.includes('differentiating') || lowerLabel.includes('competitors') || lowerLabel.includes('positioning')) return 'Competitive Positioning';
+            if (lowerLabel.includes('product scaling') || lowerLabel.includes('system reliability')) return 'Product Scalability';
+            if (lowerLabel.includes('international expansion') || lowerLabel.includes('new markets')) return 'International Expansion';
+            if (lowerLabel.includes('organisational culture') || lowerLabel.includes('values')) return 'Organisational Culture';
+            if (lowerLabel.includes('innovation') || lowerLabel.includes('r&d')) return 'Innovation & R&D';
+            if (lowerLabel.includes('risk') || lowerLabel.includes('governance')) return 'Risk Management';
+            if (lowerLabel.includes('sustainability') || lowerLabel.includes('long-term planning')) return 'Sustainability';
+            if (lowerLabel.includes('churn') || lowerLabel.includes('reduce it')) return 'Churn Management';
+            if (lowerLabel.includes('pricing strategy') || lowerLabel.includes('revenue optimisation')) return 'Pricing Strategy';
+            if (lowerLabel.includes('supply chain') || lowerLabel.includes('vendor relationships')) return 'Supply Chain';
+            if (lowerLabel.includes('data analytics') || lowerLabel.includes('business intelligence')) return 'Data Analytics';
+            if (lowerLabel.includes('intellectual property') || lowerLabel.includes('competitive advantages')) return 'IP Management';
+            if (lowerLabel.includes('corporate development') || lowerLabel.includes('m&a')) return 'Corporate Development';
+            if (lowerLabel.includes('board relationships') || lowerLabel.includes('governance structure')) return 'Board Governance';
+            if (lowerLabel.includes('talent acquisition') || lowerLabel.includes('retention')) return 'Talent Strategy';
+            if (lowerLabel.includes('technology infrastructure') || lowerLabel.includes('scalability')) return 'Tech Infrastructure';
+            if (lowerLabel.includes('customer experience') || lowerLabel.includes('journey mapping')) return 'Customer Experience';
+            if (lowerLabel.includes('brand positioning') || lowerLabel.includes('marketing strategy')) return 'Brand Strategy';
+            if (lowerLabel.includes('sales process') || lowerLabel.includes('optimisation')) return 'Sales Optimisation';
+            if (lowerLabel.includes('global operations') || lowerLabel.includes('international compliance')) return 'Global Operations';
+            if (lowerLabel.includes('corporate social responsibility') || lowerLabel.includes('csr')) return 'CSR Strategy';
+            if (lowerLabel.includes('public relations') || lowerLabel.includes('media strategy')) return 'PR Strategy';
+            if (lowerLabel.includes('investor relations') || lowerLabel.includes('communications')) return 'Investor Relations';
+            if (lowerLabel.includes('regulatory compliance') || lowerLabel.includes('industry standards')) return 'Regulatory Compliance';
+            if (lowerLabel.includes('strategic planning') || lowerLabel.includes('execution')) return 'Strategic Planning';
+            if (lowerLabel.includes('organisational structure') || lowerLabel.includes('reporting lines')) return 'Organisational Structure';
+            if (lowerLabel.includes('performance management') || lowerLabel.includes('kpis')) return 'Performance Management';
+            if (lowerLabel.includes('change management') || lowerLabel.includes('transformation')) return 'Change Management';
+            if (lowerLabel.includes('stakeholder management')) return 'Stakeholder Management';
+            if (lowerLabel.includes('crisis management') || lowerLabel.includes('business continuity')) return 'Crisis Management';
+            if (lowerLabel.includes('succession planning') || lowerLabel.includes('leadership development')) return 'Succession Planning';
+            
+            // If still no match, return a meaningful fallback based on emoji
+            return 'Business Area';
+        }
+
+        function getEmojiForQuestion(questionLabel) {
+            const emojiMap = {
+                'customer': '👥',
+                'mvp': '🔧',
+                'business model': '💼',
+                'gtm': '🚀',
+                'team': '👨‍💼',
+                'fundraising': '💸',
+                'milestones': '🎯',
+                'solution': '💡',
+                'validation': '✅',
+                'traction': '📈',
+                'growth': '🌱',
+                'scale': '📊',
+                'financial': '💰',
+                'legal': '⚖️',
+                'compliance': '🛡️',
+                'operations': '⚙️',
+                'culture': '🏢',
+                'strategy': '🧠',
+                'expansion': '🌍',
+                'partnership': '🤝'
+            };
+            
+            const lowerLabel = questionLabel.toLowerCase();
+            for (const [key, emoji] of Object.entries(emojiMap)) {
+                if (lowerLabel.includes(key)) {
+                    return emoji;
+                }
+            }
+            return '📋'; // Default emoji
+        }
+
+        function generateFallbackDashboard() {
+            // Fallback to the old dashboard if no stage-specific questions
+            const detailedScores = stageResult.detailedScores || {};
             const revenueScore = detailedScores.revenue?.score || 2;
             const customersScore = detailedScores.customers?.score || 2;
             const fundingScore = detailedScores.funding?.score || 2;
@@ -1356,9 +1749,7 @@
                 }
             }
             
-            const results = document.getElementById('results');
-            results.style.display = 'block';
-            results.innerHTML = `
+            return `
                 <div style="text-align: center; margin-bottom: 30px;">
                     <h2 style="color: #0D9488; font-size: 32px; margin-bottom: 10px;">🚀 STARTUP DIAGNOSTIC DASHBOARD</h2>
                     <p style="color: #6B7280; font-size: 18px;">Your complete performance analysis</p>
@@ -1384,7 +1775,6 @@
                         <div style="font-size: 14px; color: ${revenueScore <= 2 ? '#ef4444' : revenueScore <= 5 ? '#f59e0b' : '#10b981'}; font-weight: bold; margin-bottom: 8px;">
                             ${revenueScore <= 2 ? 'Red Zone' : revenueScore <= 5 ? 'Amber Zone' : 'Green Zone'}
                         </div>
-
                     </div>
                     
                     <!-- Customers -->
@@ -1405,7 +1795,6 @@
                         <div style="font-size: 14px; color: ${customersScore <= 2 ? '#ef4444' : customersScore <= 5 ? '#f59e0b' : '#10b981'}; font-weight: bold; margin-bottom: 8px;">
                             ${customersScore <= 2 ? 'Red Zone' : customersScore <= 5 ? 'Amber Zone' : 'Green Zone'}
                         </div>
-
                     </div>
                     
                     <!-- Funding -->
@@ -1426,7 +1815,6 @@
                         <div style="font-size: 14px; color: ${fundingScore <= 2 ? '#ef4444' : fundingScore <= 5 ? '#f59e0b' : '#10b981'}; font-weight: bold; margin-bottom: 8px;">
                             ${fundingScore <= 2 ? 'Red Zone' : fundingScore <= 5 ? 'Amber Zone' : 'Green Zone'}
                         </div>
-
                     </div>
                     
                     <!-- Team Size -->
@@ -1447,7 +1835,6 @@
                         <div style="font-size: 14px; color: ${teamScore <= 2 ? '#ef4444' : teamScore <= 5 ? '#f59e0b' : '#10b981'}; font-weight: bold; margin-bottom: 8px;">
                             ${teamScore <= 2 ? 'Red Zone' : teamScore <= 5 ? 'Amber Zone' : 'Green Zone'}
                         </div>
-
                     </div>
                     
                     <!-- Runway -->
@@ -1461,14 +1848,10 @@
                                         stroke-width="8" stroke-dasharray="${(runwayScore/10) * 314}" stroke-dashoffset="0" 
                                         transform="rotate(-90 60 60)" stroke-linecap="round"/>
                             </svg>
-                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: bold; color: #374151;">
-                                ${runwayScore}/10
-                            </div>
                         </div>
                         <div style="font-size: 14px; color: ${runwayScore <= 2 ? '#ef4444' : runwayScore <= 5 ? '#f59e0b' : '#10b981'}; font-weight: bold; margin-bottom: 8px;">
                             ${runwayScore <= 2 ? 'Red Zone' : runwayScore <= 5 ? 'Amber Zone' : 'Green Zone'}
                         </div>
-
                     </div>
                     
                     <!-- Overall Score -->
@@ -1508,6 +1891,7 @@
                 </div>
             `;
         }
+
 
         function restartForm() {
             currentStep = 1;
